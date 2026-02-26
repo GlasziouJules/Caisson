@@ -29,13 +29,64 @@
         </svg>
         <span>SubWoofer<strong>Designer</strong></span>
       </div>
-      <p class="tagline">Calculateur de caisson de basse basé sur les paramètres de Thiele-Small</p>
+      <p class="tagline">Calculs Thiele-Small · Vue 3D · Base de données subwoofers</p>
     </div>
   </header>
 
   <main>
 
-    <!-- STEP 1: PARAMÈTRES DU HP -->
+    <!-- ══════════════════════════════════════════════════════
+         SECTION 0 — BASE DE DONNÉES SUBWOOFERS
+    ══════════════════════════════════════════════════════════ -->
+    <section class="card" id="section-db">
+      <div class="card-header">
+        <div class="step-badge">0</div>
+        <h2>Charger depuis la base de données</h2>
+        <span id="api-status" class="api-badge api-offline">⚡ Mode hors-ligne</span>
+      </div>
+
+      <div class="db-search-row">
+        <div class="param-group">
+          <label for="db-brand">Marque</label>
+          <select id="db-brand">
+            <option value="">— Sélectionner une marque —</option>
+          </select>
+        </div>
+        <div class="param-group">
+          <label for="db-model">Modèle</label>
+          <select id="db-model" disabled>
+            <option value="">— Choisir d'abord une marque —</option>
+          </select>
+        </div>
+        <div class="param-group" style="justify-content:flex-end">
+          <label>&nbsp;</label>
+          <button id="db-load-btn" class="btn-load" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="8 17 12 21 16 17"/>
+              <line x1="12" y1="3" x2="12" y2="21"/>
+            </svg>
+            Charger les paramètres
+          </button>
+        </div>
+      </div>
+
+      <div id="db-loaded-band" class="db-loaded hidden">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/></svg>
+        Paramètres chargés :&nbsp;<strong id="db-loaded-name">—</strong>
+      </div>
+
+      <div class="db-brands-logos">
+        <span class="brand-chip">MTX Audio</span>
+        <span class="brand-chip">Focal</span>
+        <span class="brand-chip">GAS</span>
+        <span class="brand-chip">GroundZero</span>
+        <span class="brand-chip">JBL</span>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════
+         SECTION 1 — PARAMÈTRES T/S
+    ══════════════════════════════════════════════════════════ -->
     <section class="card" id="section-params">
       <div class="card-header">
         <div class="step-badge">1</div>
@@ -43,11 +94,11 @@
         <div class="presets-wrapper">
           <label>Présets :</label>
           <select id="preset-select">
-            <option value="">— Choisir un préset —</option>
-            <option value="sub10">Subwoofer 10" générique</option>
-            <option value="sub12">Subwoofer 12" générique</option>
-            <option value="sub15">Subwoofer 15" générique</option>
-            <option value="sub18">Subwoofer 18" générique</option>
+            <option value="">— Génériqu —</option>
+            <option value="sub10">10" générique</option>
+            <option value="sub12">12" générique</option>
+            <option value="sub15">15" générique</option>
+            <option value="sub18">18" générique</option>
           </select>
         </div>
       </div>
@@ -60,12 +111,12 @@
         </div>
         <div class="param-group">
           <label for="Qts">Qts</label>
-          <input type="number" id="Qts" value="0.35" min="0.1" max="2" step="0.01">
+          <input type="number" id="Qts" value="0.35" min="0.1" max="2" step="0.001">
           <small>Facteur de qualité total</small>
         </div>
         <div class="param-group">
           <label for="Qes">Qes</label>
-          <input type="number" id="Qes" value="0.40" min="0.1" max="5" step="0.01">
+          <input type="number" id="Qes" value="0.40" min="0.1" max="5" step="0.001">
           <small>Facteur de qualité électrique</small>
         </div>
         <div class="param-group">
@@ -76,7 +127,7 @@
         <div class="param-group">
           <label for="Vas">Vas <span class="unit">L</span></label>
           <input type="number" id="Vas" value="40" min="0.5" max="500" step="0.1">
-          <small>Volume de compliance équivalent</small>
+          <small>Volume compliance équivalent</small>
         </div>
         <div class="param-group">
           <label for="Xmax">Xmax <span class="unit">mm</span></label>
@@ -85,34 +136,36 @@
         </div>
         <div class="param-group">
           <label for="Re">Re <span class="unit">Ω</span></label>
-          <input type="number" id="Re" value="3.2" min="1" max="32" step="0.1">
+          <input type="number" id="Re" value="3.2" min="0.5" max="32" step="0.1">
           <small>Résistance DC de la bobine</small>
         </div>
         <div class="param-group">
           <label for="diameter">Diamètre <span class="unit">mm</span></label>
-          <input type="number" id="diameter" value="300" min="50" max="600" step="5">
-          <small>Diamètre effectif du haut-parleur</small>
+          <input type="number" id="diameter" value="300" min="100" max="600" step="5">
+          <small>Diamètre effectif du HP</small>
         </div>
         <div class="param-group">
           <label for="power">Puissance <span class="unit">W</span></label>
-          <input type="number" id="power" value="400" min="10" max="5000" step="10">
-          <small>Puissance nominale</small>
+          <input type="number" id="power" value="400" min="10" max="6000" step="10">
+          <small>Puissance nominale RMS</small>
         </div>
       </div>
     </section>
 
-    <!-- STEP 2: TYPE DE CAISSON -->
+    <!-- ══════════════════════════════════════════════════════
+         SECTION 2 — TYPE + DOUBLE SUB
+    ══════════════════════════════════════════════════════════ -->
     <section class="card" id="section-type">
       <div class="card-header">
         <div class="step-badge">2</div>
-        <h2>Type de Caisson</h2>
+        <h2>Type de Caisson &amp; Configuration</h2>
       </div>
 
+      <!-- Type de caisson -->
       <div class="enclosure-tabs">
         <button class="tab-btn active" data-type="sealed">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <rect x="3" y="4" width="18" height="16" rx="2"/>
-            <circle cx="12" cy="12" r="4"/>
+            <rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="12" r="4"/>
           </svg>
           <span>Clos (Sealed)</span>
           <small>Grave précis et contrôlé</small>
@@ -133,7 +186,7 @@
             <circle cx="7" cy="12" r="3"/>
             <rect x="13" y="8" width="3" height="8" rx="1.5"/>
           </svg>
-          <span>Double chambre (Bandpass)</span>
+          <span>Bandpass</span>
           <small>Bande passante filtrée</small>
         </button>
       </div>
@@ -143,19 +196,17 @@
         <div class="options-row">
           <div class="param-group">
             <label for="Qtc">Qtc cible</label>
-            <input type="number" id="Qtc" value="0.707" min="0.5" max="1.2" step="0.001">
+            <input type="number" id="Qtc" value="0.707" min="0.5" max="1.3" step="0.001">
             <small>0.707 = Butterworth (recommandé)</small>
           </div>
           <div class="param-group">
             <label for="panel-thick-sealed">Épaisseur panneau <span class="unit">mm</span></label>
             <input type="number" id="panel-thick-sealed" value="18" min="9" max="30" step="1">
-            <small>MDF/contreplaqué</small>
+            <small>MDF / contreplaqué</small>
           </div>
         </div>
         <div class="info-box">
-          <strong>💡 Conseil :</strong> Un Qtc de 0.707 donne une réponse Butterworth (maximalement plate).
-          Augmenter Qtc réduit le volume mais crée un pic de résonance.
-          Diminuer Qtc améliore l'amortissement (boîte plus grande).
+          <strong>💡 Conseil :</strong> Qtc=0.707 → réponse plate maximale. Plus haut = plus de grave mais pic de résonance. Plus bas = meilleur amortissement (caisson plus grand).
         </div>
       </div>
 
@@ -163,30 +214,27 @@
       <div class="type-options hidden" id="opts-ported">
         <div class="options-row">
           <div class="param-group">
-            <label for="Fb">Fréquence d'accord <span class="unit">Hz</span></label>
-            <input type="number" id="Fb" value="35" min="15" max="120" step="0.5" placeholder="Auto">
-            <small>Laisser vide pour auto (≈ Fs)</small>
+            <label for="Fb">Accord Fb <span class="unit">Hz</span></label>
+            <input type="number" id="Fb" value="" min="10" max="120" step="0.5" placeholder="Auto (≈ 0.7×Fs)">
+            <small>Laisser vide pour valeur auto</small>
           </div>
           <div class="param-group">
-            <label for="port-diam">Diamètre évent <span class="unit">mm</span></label>
-            <input type="number" id="port-diam" value="100" min="30" max="200" step="5">
-            <small>Diamètre interne du tube d'évent</small>
+            <label for="port-diam">Ø évent <span class="unit">mm</span></label>
+            <input type="number" id="port-diam" value="100" min="30" max="250" step="5">
+            <small>Diamètre interne du tube</small>
           </div>
           <div class="param-group">
-            <label for="port-count">Nombre d'évents</label>
+            <label for="port-count">Nb évents</label>
             <input type="number" id="port-count" value="1" min="1" max="4" step="1">
-            <small>1 ou 2 évents</small>
+            <small>1 à 4 évents parallèles</small>
           </div>
           <div class="param-group">
-            <label for="panel-thick-ported">Épaisseur panneau <span class="unit">mm</span></label>
+            <label for="panel-thick-ported">Épaisseur <span class="unit">mm</span></label>
             <input type="number" id="panel-thick-ported" value="18" min="9" max="30" step="1">
-            <small>MDF/contreplaqué</small>
           </div>
         </div>
         <div class="info-box">
-          <strong>💡 Conseil :</strong> L'accord en évent idéal est ≈ 0.7 × Fs.
-          Un évent trop court provoque du bruit d'air (chuffing).
-          Recommandé pour Qts &lt; 0.4.
+          <strong>💡 Conseil :</strong> Accord idéal ≈ 0.7 × Fs. Un tube trop court = chuffing. Idéal pour Qts &lt; 0.4. Doubler le diamètre de l'évent réduit sa longueur de 4×.
         </div>
       </div>
 
@@ -194,41 +242,71 @@
       <div class="type-options hidden" id="opts-bandpass">
         <div class="options-row">
           <div class="param-group">
-            <label for="bp-ratio">Rapport de volumes</label>
-            <input type="number" id="bp-ratio" value="0.6" min="0.2" max="1.5" step="0.05">
-            <small>V_avant / V_arrière</small>
+            <label for="bp-ratio">Ratio V_avant/V_arrière</label>
+            <input type="number" id="bp-ratio" value="0.6" min="0.1" max="2" step="0.05">
+            <small>Typique : 0.4 – 0.8</small>
           </div>
           <div class="param-group">
-            <label for="panel-thick-bp">Épaisseur panneau <span class="unit">mm</span></label>
+            <label for="panel-thick-bp">Épaisseur <span class="unit">mm</span></label>
             <input type="number" id="panel-thick-bp" value="18" min="9" max="30" step="1">
-            <small>MDF/contreplaqué</small>
           </div>
         </div>
         <div class="info-box">
-          <strong>💡 Conseil :</strong> Le caisson bandpass filtre mécaniquement les fréquences.
-          Très efficace mais bande passante limitée (généralement 1 à 2 octaves).
+          <strong>💡 Conseil :</strong> Le bandpass filtre mécaniquement les fréquences. Bande typique : 1–2 octaves. Très efficace mais directionnel à l'évent.
+        </div>
+      </div>
+
+      <!-- ── Double Sub ────────────────────────────────────── -->
+      <div class="double-sub-section">
+        <div class="double-sub-header">
+          <label class="toggle-label" for="double-sub-toggle">
+            <input type="checkbox" id="double-sub-toggle">
+            <span class="toggle-switch"></span>
+            <span class="toggle-text">
+              <strong>Configuration Double Sub</strong>
+              <small>2 haut-parleurs dans le même caisson</small>
+            </span>
+          </label>
+        </div>
+        <div id="double-sub-options" class="double-sub-options hidden">
+          <label class="radio-label">
+            <input type="radio" name="double-sub-mode" value="parallel" checked>
+            <span>
+              <strong>Parallèle (standard)</strong>
+              <small>Volume ×2 — +3 dB SPL — 2 HP côte à côte ou superposés</small>
+            </span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="double-sub-mode" value="isobaric">
+            <span>
+              <strong>Isobarique (push-pull)</strong>
+              <small>Volume ÷2 — même SPL — 2 HP face à face (gain de place)</small>
+            </span>
+          </label>
         </div>
       </div>
     </section>
 
-    <!-- CALCULATE BUTTON -->
+    <!-- BOUTON CALCULER -->
     <div class="calculate-wrapper">
       <button id="btn-calculate" class="btn-calculate">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
         </svg>
         Calculer le Caisson
       </button>
     </div>
 
-    <!-- STEP 3: RÉSULTATS + VUE 3D -->
+    <!-- ══════════════════════════════════════════════════════
+         SECTION 3 — RÉSULTATS + VUE 3D
+    ══════════════════════════════════════════════════════════ -->
     <section class="card hidden" id="section-results">
       <div class="card-header">
         <div class="step-badge">3</div>
-        <h2>Résultats &amp; Visualisation</h2>
+        <h2>Résultats &amp; Visualisation 3D</h2>
         <button id="btn-copy" class="btn-secondary" title="Copier les dimensions">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+            <rect x="9" y="9" width="13" height="13" rx="2"/>
             <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
           </svg>
           Copier
@@ -237,53 +315,42 @@
 
       <div class="results-layout">
 
-        <!-- Panel gauche : métriques -->
+        <!-- Panel métriques -->
         <div class="results-panel">
+          <div class="metrics-grid" id="metrics-grid"></div>
 
-          <div class="metrics-grid" id="metrics-grid">
-            <!-- Rempli par JS -->
-          </div>
-
-          <div class="dims-box" id="dims-box">
+          <div class="dims-box">
             <h3>Dimensions du caisson</h3>
-            <div class="dims-table" id="dims-table">
-              <!-- Rempli par JS -->
-            </div>
+            <div class="dims-table" id="dims-table"></div>
           </div>
 
-          <div class="warnings-box hidden" id="warnings-box">
-            <!-- Avertissements -->
-          </div>
+          <div class="warnings-box hidden" id="warnings-box"></div>
 
-          <!-- Graphe fréquence -->
           <div class="chart-wrapper">
             <h3>Réponse en fréquence estimée</h3>
             <canvas id="freq-chart" width="500" height="220"></canvas>
             <div class="chart-legend">
-              <span class="legend-item"><span class="dot" style="background:#06b6d4"></span> Réponse simulée</span>
-              <span class="legend-item"><span class="dot" style="background:#f59e0b"></span> -3 dB</span>
-              <span class="legend-item"><span class="dot" style="background:#10b981"></span> Fréquence d'accord</span>
+              <span class="legend-item"><span class="dot" style="background:#06b6d4"></span>Réponse</span>
+              <span class="legend-item"><span class="dot" style="background:#f59e0b"></span>−3 dB</span>
+              <span class="legend-item"><span class="dot" style="background:#10b981"></span>Fc / Fb</span>
             </div>
           </div>
-
         </div>
 
-        <!-- Panel droit : vue 3D -->
+        <!-- Panel 3D -->
         <div class="viewer-panel">
           <div class="viewer-header">
             <h3>Vue 3D interactive</h3>
             <div class="viewer-controls">
-              <button id="btn-wireframe" class="ctrl-btn" title="Filaire / Plein">
+              <button id="btn-wireframe" class="ctrl-btn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <rect x="3" y="3" width="18" height="18" rx="2"/>
-                  <line x1="3" y1="9" x2="21" y2="9"/>
-                  <line x1="3" y1="15" x2="21" y2="15"/>
-                  <line x1="9" y1="3" x2="9" y2="21"/>
-                  <line x1="15" y1="3" x2="15" y2="21"/>
+                  <line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/>
+                  <line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/>
                 </svg>
                 Filaire
               </button>
-              <button id="btn-reset-cam" class="ctrl-btn" title="Réinitialiser la caméra">
+              <button id="btn-reset-cam" class="ctrl-btn">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                   <path d="M1 4v6h6M23 20v-6h-6"/>
                   <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>
@@ -295,12 +362,11 @@
           <div id="viewer-container">
             <canvas id="three-canvas"></canvas>
             <div class="viewer-hint">
-              <span>🖱️ Clic-glisser : rotation</span>
+              <span>🖱 Clic-glisser : rotation</span>
               <span>Molette : zoom</span>
-              <span>Clic-droit : déplacement</span>
+              <span>Clic-droit : panoramique</span>
             </div>
           </div>
-          <div id="dim-overlay" class="dim-overlay"></div>
         </div>
 
       </div>
@@ -309,11 +375,11 @@
   </main>
 
   <footer>
-    <p>Calculs basés sur les paramètres de Thiele-Small · Formules de dimensionnement acoustique · Visualisation Three.js</p>
-    <p>⚠️ Les résultats sont des estimations à vérifier avec un simulateur acoustique (WinISD, Hornresp, etc.)</p>
+    <p>Calculs basés sur les paramètres de Thiele-Small · Visualisation Three.js r169</p>
+    <p>⚠️ Résultats indicatifs — à vérifier avec WinISD, Hornresp ou BassBox Pro</p>
   </footer>
 
-  <div id="toast" class="toast hidden">Dimensions copiées !</div>
+  <div id="toast" class="toast hidden">✅ Dimensions copiées dans le presse-papiers</div>
 
   <script type="module" src="js/app.js"></script>
 </body>

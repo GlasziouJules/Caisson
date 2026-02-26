@@ -2,92 +2,129 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 // ============================================================
+//  DONNÉES STATIQUES — Fallback si l'API n'est pas disponible
+// ============================================================
+const STATIC_BRANDS = [
+  { id: 1, name: 'MTX Audio',  country: 'États-Unis' },
+  { id: 2, name: 'Focal',      country: 'France'     },
+  { id: 3, name: 'GAS',        country: 'Suède'      },
+  { id: 4, name: 'GroundZero', country: 'Allemagne'  },
+  { id: 5, name: 'JBL',        country: 'États-Unis' },
+];
+
+const STATIC_SUBS = [
+  // MTX Audio
+  { id:1,  brand_id:1, model:'MTX RT8D 8"',          size_inch:8.0,  diameter_mm:200, fs:48.00, qts:0.5200, qes:0.6800, qms:3.20, vas:9.00,   xmax:7.5,  re:3.60, voice_coil:'2×4Ω', power_rms:150,  recommended_type:'sealed' },
+  { id:2,  brand_id:1, model:'MTX RT10D 10"',         size_inch:10.0, diameter_mm:250, fs:42.00, qts:0.4500, qes:0.5700, qms:3.30, vas:16.00,  xmax:9.5,  re:3.50, voice_coil:'2×4Ω', power_rms:200,  recommended_type:'both'   },
+  { id:3,  brand_id:1, model:'MTX 55DOIT 12"',        size_inch:12.0, diameter_mm:305, fs:36.00, qts:0.3800, qes:0.4700, qms:3.00, vas:38.00,  xmax:13.0, re:3.50, voice_coil:'2×4Ω', power_rms:500,  recommended_type:'both'   },
+  { id:4,  brand_id:1, model:'MTX 9512D2 12"',        size_inch:12.0, diameter_mm:305, fs:27.00, qts:0.2800, qes:0.3500, qms:2.30, vas:82.00,  xmax:22.0, re:1.70, voice_coil:'2×2Ω', power_rms:1200, recommended_type:'ported'  },
+  { id:5,  brand_id:1, model:'MTX 9500D2 15"',        size_inch:15.0, diameter_mm:380, fs:22.00, qts:0.2500, qes:0.3100, qms:2.10, vas:140.00, xmax:27.0, re:1.50, voice_coil:'2×2Ω', power_rms:1500, recommended_type:'ported'  },
+  // Focal
+  { id:6,  brand_id:2, model:'Focal Sub P20F 8"',     size_inch:8.0,  diameter_mm:210, fs:52.00, qts:0.5200, qes:0.6800, qms:3.50, vas:9.00,   xmax:6.5,  re:3.50, voice_coil:'4Ω',   power_rms:150,  recommended_type:'sealed' },
+  { id:7,  brand_id:2, model:'Focal Sub P25F 10"',    size_inch:10.0, diameter_mm:250, fs:44.00, qts:0.4800, qes:0.6200, qms:3.50, vas:15.00,  xmax:8.0,  re:3.50, voice_coil:'4Ω',   power_rms:200,  recommended_type:'sealed' },
+  { id:8,  brand_id:2, model:'Focal Sub P30F 12"',    size_inch:12.0, diameter_mm:300, fs:36.00, qts:0.4000, qes:0.5000, qms:3.00, vas:32.00,  xmax:12.0, re:3.30, voice_coil:'4Ω',   power_rms:300,  recommended_type:'both'   },
+  { id:9,  brand_id:2, model:'Focal Sub P33F 13"',    size_inch:13.0, diameter_mm:330, fs:30.00, qts:0.3600, qes:0.4500, qms:2.80, vas:52.00,  xmax:16.0, re:3.00, voice_coil:'4Ω',   power_rms:400,  recommended_type:'both'   },
+  { id:10, brand_id:2, model:'Focal Utopia Be W33',   size_inch:13.0, diameter_mm:330, fs:22.00, qts:0.2800, qes:0.3400, qms:2.30, vas:80.00,  xmax:24.0, re:2.40, voice_coil:'4Ω',   power_rms:500,  recommended_type:'ported'  },
+  // GAS
+  { id:11, brand_id:3, model:'GAS SQ8D4 8"',          size_inch:8.0,  diameter_mm:200, fs:48.00, qts:0.4800, qes:0.6200, qms:3.30, vas:10.00,  xmax:10.0, re:3.50, voice_coil:'2×4Ω', power_rms:300,  recommended_type:'sealed' },
+  { id:12, brand_id:3, model:'GAS SQ10D4 10"',        size_inch:10.0, diameter_mm:250, fs:40.00, qts:0.4200, qes:0.5300, qms:3.20, vas:20.00,  xmax:13.0, re:3.40, voice_coil:'2×4Ω', power_rms:450,  recommended_type:'both'   },
+  { id:13, brand_id:3, model:'GAS SQ12D4 12"',        size_inch:12.0, diameter_mm:305, fs:33.00, qts:0.3600, qes:0.4500, qms:3.00, vas:40.00,  xmax:16.0, re:3.30, voice_coil:'2×4Ω', power_rms:600,  recommended_type:'both'   },
+  { id:14, brand_id:3, model:'GAS Octane 10D4',       size_inch:10.0, diameter_mm:250, fs:36.00, qts:0.3400, qes:0.4300, qms:2.80, vas:28.00,  xmax:16.0, re:3.30, voice_coil:'2×4Ω', power_rms:700,  recommended_type:'ported'  },
+  { id:15, brand_id:3, model:'GAS Octane 12D4',       size_inch:12.0, diameter_mm:305, fs:26.00, qts:0.2800, qes:0.3500, qms:2.50, vas:60.00,  xmax:22.0, re:3.00, voice_coil:'2×4Ω', power_rms:1000, recommended_type:'ported'  },
+  // GroundZero
+  { id:16, brand_id:4, model:'GZPW 8D4 8"',           size_inch:8.0,  diameter_mm:200, fs:50.00, qts:0.5200, qes:0.6800, qms:3.60, vas:12.00,  xmax:9.0,  re:3.50, voice_coil:'2×4Ω', power_rms:250,  recommended_type:'sealed' },
+  { id:17, brand_id:4, model:'GZPW 10D4 10"',         size_inch:10.0, diameter_mm:250, fs:38.00, qts:0.4200, qes:0.5300, qms:3.20, vas:22.00,  xmax:12.0, re:3.40, voice_coil:'2×4Ω', power_rms:400,  recommended_type:'both'   },
+  { id:18, brand_id:4, model:'GZPW 12D4 12"',         size_inch:12.0, diameter_mm:305, fs:30.00, qts:0.3500, qes:0.4300, qms:3.00, vas:50.00,  xmax:17.0, re:3.40, voice_coil:'2×4Ω', power_rms:650,  recommended_type:'both'   },
+  { id:19, brand_id:4, model:'GZPW 15D2 15"',         size_inch:15.0, diameter_mm:380, fs:24.00, qts:0.2800, qes:0.3500, qms:2.60, vas:100.00, xmax:22.0, re:1.80, voice_coil:'2×2Ω', power_rms:900,  recommended_type:'ported'  },
+  { id:20, brand_id:4, model:'GZPW 3000SPL 12"',      size_inch:12.0, diameter_mm:305, fs:35.00, qts:0.3000, qes:0.3700, qms:2.50, vas:45.00,  xmax:28.0, re:2.50, voice_coil:'2×2Ω', power_rms:1500, recommended_type:'ported'  },
+  // JBL
+  { id:21, brand_id:5, model:'JBL Club WS1000 10"',   size_inch:10.0, diameter_mm:250, fs:37.00, qts:0.4000, qes:0.5000, qms:3.00, vas:30.00,  xmax:12.0, re:3.50, voice_coil:'4Ω',   power_rms:400,  recommended_type:'both'   },
+  { id:22, brand_id:5, model:'JBL CS-WQ12 12"',       size_inch:12.0, diameter_mm:305, fs:38.00, qts:0.4100, qes:0.5200, qms:2.90, vas:30.00,  xmax:11.0, re:3.50, voice_coil:'4Ω',   power_rms:450,  recommended_type:'both'   },
+  { id:23, brand_id:5, model:'JBL GT-BassPro 12"',    size_inch:12.0, diameter_mm:305, fs:33.00, qts:0.3700, qes:0.4600, qms:2.80, vas:48.00,  xmax:14.0, re:3.30, voice_coil:'4Ω',   power_rms:500,  recommended_type:'both'   },
+  { id:24, brand_id:5, model:'JBL Stage 1210 12"',    size_inch:12.0, diameter_mm:305, fs:35.00, qts:0.3800, qes:0.4700, qms:3.00, vas:35.00,  xmax:12.0, re:3.50, voice_coil:'4Ω',   power_rms:400,  recommended_type:'both'   },
+  { id:25, brand_id:5, model:'JBL W15GTI MkII 15"',   size_inch:15.0, diameter_mm:380, fs:19.00, qts:0.2400, qes:0.3000, qms:2.00, vas:165.00, xmax:32.0, re:2.00, voice_coil:'2×2Ω', power_rms:2000, recommended_type:'ported'  },
+];
+
+const API_BASE = 'http://localhost:3001/api';
+let apiAvailable = false;
+
+async function apiFetch(path) {
+  const r = await fetch(API_BASE + path);
+  if (!r.ok) throw new Error(r.statusText);
+  return r.json();
+}
+
+// ============================================================
 //  CALCULATOR — Thiele-Small physics
 // ============================================================
 class Calculator {
 
-  /** Sealed (clos) enclosure */
   static sealed(Fs, Qts, Vas, Qtc = 0.707) {
-    if (Qtc <= Qts)
-      throw new Error(`Qtc (${Qtc}) doit être > Qts (${Qts})`);
-
-    const alpha = (Qtc / Qts) ** 2 - 1;   // Vas/Vb
-    const Vb   = Vas / alpha;              // litres
-    const Fc   = Fs * (Qtc / Qts);        // Hz
-    // -3 dB frequency (2nd order high-pass)
-    const a    = 2 - 1 / (Qtc * Qtc);
-    const f3   = Fc * Math.sqrt((a + Math.sqrt(a * a + 4)) / 2);
-
+    if (Qtc <= Qts) throw new Error(`Qtc (${Qtc}) doit être > Qts (${Qts})`);
+    const alpha = (Qtc / Qts) ** 2 - 1;
+    const Vb    = Vas / alpha;
+    const Fc    = Fs * Math.sqrt(1 + alpha);
+    const a     = 2 - 1 / (Qtc * Qtc);
+    const f3    = Fc * Math.sqrt((a + Math.sqrt(a * a + 4)) / 2);
     return { Vb, Fc, Qtc, f3, alpha };
   }
 
-  /** Ported (évent) enclosure — simplified Thiele alignment */
   static ported(Fs, Qts, Vas, Fb_target = null) {
-    // Volume using empirical formula (valid ~0.2 ≤ Qts ≤ 0.6)
     const Vb = Math.max(Vas * 20 * Math.pow(Qts, 3.3), Vas * 0.1);
-    const Fb = Fb_target || (0.707 * Fs);
-
-    // System Q at box tuning (approximation)
+    const Fb = Fb_target ?? (0.707 * Fs);
     const alpha = Vas / Vb;
     const Qb    = Qts * Math.sqrt(1 + alpha);
-    // f(-3dB) ≈ Fb for well-tuned system
-    const f3    = Fb * 0.9;
-
+    const f3    = Fb * 0.85;
     return { Vb, Fb, Qb, f3, alpha };
   }
 
-  /** Port (évent) length — Helmholtz resonator */
   static portLength(Fb, Vb_liters, portDiam_mm, numPorts = 1) {
-    const r     = (portDiam_mm / 2) / 10; // cm
-    const A     = Math.PI * r * r;         // cm²
-    const Vb_cm3 = (Vb_liters * 1000) / numPorts;
-    const c     = 34400; // cm/s
-
-    // Lp = (c² × A) / (4π² × Fb² × Vb) − 0.73 × Dp
-    const Le = (c * c * A) / (4 * Math.PI ** 2 * Fb * Fb * Vb_cm3);
-    const Lp = Le - 0.73 * (portDiam_mm / 10);
-    return Math.max(Lp, 2); // minimum 2 cm
+    const r       = (portDiam_mm / 2) / 10;   // cm
+    const A       = Math.PI * r * r;           // cm²
+    const Vb_cm3  = (Vb_liters * 1000) / numPorts;
+    const c       = 34400;                     // cm/s
+    const Le      = (c * c * A) / (4 * Math.PI ** 2 * Fb * Fb * Vb_cm3);
+    return Math.max(Le - 0.73 * (portDiam_mm / 10), 2);
   }
 
-  /** Bandpass 4th-order approximation */
   static bandpass(Fs, Qts, Vas, ratio = 0.6) {
-    // Front sealed chamber
-    const Qtc_front = 0.707;
-    const alpha_f   = (Qtc_front / Qts) ** 2 - 1;
-    const Vb_front  = Vas / alpha_f;
-    // Back ported chamber
-    const Vb_back   = Vb_front / ratio;
-    const Fb        = Fs * 0.85;
-    const bw        = Fs * 1.4; // approx bandwidth (-3dB)
-
-    return {
-      Vb_front,
-      Vb_back,
-      Vb: Vb_front + Vb_back,
-      Fb,
-      f_low:  Fb * 0.7,
-      f_high: bw,
-    };
+    const alpha_f  = (0.707 / Qts) ** 2 - 1;
+    const Vb_front = Vas / alpha_f;
+    const Vb_back  = Vb_front / ratio;
+    const Fb       = Fs * 0.85;
+    return { Vb_front, Vb_back, Vb: Vb_front + Vb_back, Fb, f_low: Fb * 0.7, f_high: Fs * 1.4 };
   }
 
-  /** Box external dimensions from internal volume */
-  static boxDimensions(Vb_liters, driverDiam_mm, panelThick_mm = 18) {
-    const Vb_cm3  = Vb_liters * 1000;
-    const d_cm    = driverDiam_mm / 10;
-    const t       = panelThick_mm / 10;
+  /**
+   * Applique le facteur double sub
+   * mode 'parallel' → volume ×2, mode 'isobaric' → volume ÷2
+   */
+  static applyDoubleSub(Vb_single, mode) {
+    if (mode === 'parallel')  return Vb_single * 2;
+    if (mode === 'isobaric')  return Vb_single / 2;
+    return Vb_single;
+  }
 
-    // Minimum internal width: 120% of driver diameter
-    const minW = d_cm * 1.2;
+  /** Dimensions du caisson depuis le volume interne */
+  static boxDimensions(Vb_liters, driverDiam_mm, panelThick_mm = 18, numSubs = 1) {
+    const Vb_cm3 = Vb_liters * 1000;
+    const d_cm   = driverDiam_mm / 10;
+    const t      = panelThick_mm / 10;
 
-    // Try a W:H:D ≈ 1:1.4:0.8 aspect ratio
-    let W = Math.max(Math.cbrt(Vb_cm3 / (1.4 * 0.8)), minW);
-    let H = W * 1.4;
+    // Largeur minimale : 125% du diamètre HP
+    const minW = d_cm * 1.25;
+    // Hauteur minimale pour numSubs HP (en prévision de l'évent)
+    const minH = d_cm * (numSubs === 2 ? 2.8 : 1.4);
+
+    // Proportion initiale W:H:D ≈ 1:1.3:0.9
+    let W = Math.max(Math.cbrt(Vb_cm3 / (1.3 * 0.9)), minW);
+    let H = Math.max(W * 1.3, minH);
     let D = Vb_cm3 / (W * H);
 
-    // If depth > height, increase proportions
-    if (D > H) {
-      W = Math.max(Math.cbrt(Vb_cm3 / 0.84), minW);
-      H = W * 1.2;
+    // Si profondeur trop grande : augmenter les proportions
+    if (D > H * 1.2) {
+      W = Math.max(Math.cbrt(Vb_cm3 / 0.9), minW);
+      H = Math.max(W, minH);
       D = Vb_cm3 / (W * H);
     }
 
@@ -108,176 +145,160 @@ class FrequencyChart {
   }
 
   draw(type, params) {
-    const ctx    = this.ctx;
-    const W      = this.canvas.width;
-    const H      = this.canvas.height;
-    const pad    = { top: 16, right: 20, bottom: 36, left: 44 };
-    const cw     = W - pad.left - pad.right;
-    const ch     = H - pad.top  - pad.bottom;
+    const ctx  = this.ctx;
+    const W    = this.canvas.width;
+    const H    = this.canvas.height;
+    const pad  = { top: 18, right: 20, bottom: 38, left: 48 };
+    const cw   = W - pad.left - pad.right;
+    const ch   = H - pad.top  - pad.bottom;
+    const fMin = 10, fMax = 500, dBMin = -42, dBMax = 6;
 
     ctx.clearRect(0, 0, W, H);
-
-    // Background
     ctx.fillStyle = '#0c1829';
     ctx.fillRect(0, 0, W, H);
 
-    // Frequency range: 10–500 Hz, log scale
-    const fMin  = 10, fMax = 500;
-    const dBMin = -40, dBMax = 6;
+    const fx = f  => pad.left + (Math.log10(f / fMin) / Math.log10(fMax / fMin)) * cw;
+    const dy = dB => pad.top  + ch - ((dB - dBMin) / (dBMax - dBMin)) * ch;
 
-    const freqToX = f =>
-      pad.left + (Math.log10(f / fMin) / Math.log10(fMax / fMin)) * cw;
-
-    const dBToY = dB =>
-      pad.top + ch - ((dB - dBMin) / (dBMax - dBMin)) * ch;
-
-    // Grid
-    ctx.strokeStyle = 'rgba(51,65,85,0.7)';
-    ctx.lineWidth   = 1;
-
-    // Horizontal dB lines
+    // Grille dB
     for (const db of [-40, -30, -20, -10, -6, -3, 0, 3]) {
-      const y = dBToY(db);
+      const y = dy(db);
       ctx.beginPath();
-      ctx.setLineDash(db === 0 ? [] : [4, 4]);
-      ctx.moveTo(pad.left, y);
-      ctx.lineTo(pad.left + cw, y);
+      ctx.strokeStyle = db === 0 ? 'rgba(100,120,160,0.6)' : 'rgba(51,65,85,0.5)';
+      ctx.lineWidth   = 1;
+      ctx.setLineDash(db === 0 ? [] : [3, 4]);
+      ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cw, y);
       ctx.stroke();
-
-      ctx.fillStyle = 'rgba(148,163,184,0.6)';
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(148,163,184,0.55)';
       ctx.font      = '10px monospace';
       ctx.textAlign = 'right';
-      ctx.fillText((db >= 0 ? '+' : '') + db + ' dB', pad.left - 4, y + 4);
+      ctx.fillText((db >= 0 ? '+' : '') + db, pad.left - 5, y + 4);
     }
-    ctx.setLineDash([]);
 
-    // Vertical frequency lines
+    // Grille fréquences
     for (const f of [20, 30, 50, 80, 100, 150, 200, 300, 500]) {
-      const x = freqToX(f);
+      const x = fx(f);
       ctx.beginPath();
-      ctx.strokeStyle = 'rgba(51,65,85,0.5)';
-      ctx.moveTo(x, pad.top);
-      ctx.lineTo(x, pad.top + ch);
+      ctx.strokeStyle = 'rgba(51,65,85,0.4)';
+      ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + ch);
       ctx.stroke();
-
-      ctx.fillStyle = 'rgba(148,163,184,0.6)';
+      ctx.fillStyle = 'rgba(148,163,184,0.55)';
       ctx.font      = '10px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(f + ' Hz', x, pad.top + ch + 16);
+      ctx.fillText(f >= 1000 ? (f/1000) + 'k' : f, x, pad.top + ch + 16);
     }
 
-    // Compute response points
-    const numPts  = 300;
-    const freqs   = Array.from({ length: numPts }, (_, i) => {
-      const t = i / (numPts - 1);
-      return fMin * Math.pow(fMax / fMin, t);
-    });
+    ctx.fillStyle  = 'rgba(148,163,184,0.4)';
+    ctx.font       = '9px monospace';
+    ctx.textAlign  = 'right';
+    ctx.fillText('dB', pad.left - 5, pad.top - 4);
+    ctx.textAlign  = 'center';
+    ctx.fillText('Hz', pad.left + cw / 2, pad.top + ch + 32);
 
-    const response = freqs.map(f => this._response(f, type, params));
-    const maxResp  = Math.max(...response);
+    // Calcul de la courbe
+    const N = 400;
+    const freqs = Array.from({ length: N }, (_, i) =>
+      fMin * Math.pow(fMax / fMin, i / (N - 1)));
+    const resp  = freqs.map(f => this._response(f, type, params));
+    const peak  = Math.max(...resp.filter(v => isFinite(v) && !isNaN(v)));
 
-    // -3 dB line
-    const db3y = dBToY(-3);
+    // Ligne -3dB
+    const y3 = dy(-3);
     ctx.beginPath();
     ctx.strokeStyle = 'rgba(245,158,11,0.5)';
     ctx.lineWidth   = 1;
     ctx.setLineDash([6, 4]);
-    ctx.moveTo(pad.left, db3y);
-    ctx.lineTo(pad.left + cw, db3y);
+    ctx.moveTo(pad.left, y3); ctx.lineTo(pad.left + cw, y3);
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Response curve
+    // Courbe principale
+    ctx.shadowColor = 'rgba(6,182,212,0.6)';
+    ctx.shadowBlur  = 8;
     ctx.beginPath();
     ctx.strokeStyle = '#06b6d4';
     ctx.lineWidth   = 2.5;
-    ctx.shadowColor  = 'rgba(6,182,212,0.5)';
-    ctx.shadowBlur   = 6;
 
     let started = false;
+    const pts = [];
     freqs.forEach((f, i) => {
-      const dB = response[i] - maxResp; // normalize to 0 dB max
-      if (dB < dBMin - 2) return;
-      const x = freqToX(f);
-      const y = dBToY(Math.max(dB, dBMin));
+      const dB = resp[i] - peak;
+      if (!isFinite(dB) || isNaN(dB) || dB < dBMin - 2) return;
+      const x = fx(f);
+      const y = dy(Math.max(dB, dBMin));
+      pts.push({ x, y });
       if (!started) { ctx.moveTo(x, y); started = true; }
       else ctx.lineTo(x, y);
     });
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // Fill under the curve
-    ctx.lineTo(freqToX(fMax), dBToY(dBMin));
-    ctx.lineTo(pad.left, dBToY(dBMin));
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(6,182,212,0.07)';
-    ctx.fill();
+    // Remplissage
+    if (pts.length > 1) {
+      ctx.beginPath();
+      pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      ctx.lineTo(pts[pts.length - 1].x, dy(dBMin));
+      ctx.lineTo(pts[0].x, dy(dBMin));
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(6,182,212,0.06)';
+      ctx.fill();
+    }
 
-    // Marker: tuning/system frequency
-    const markerFreq = type === 'sealed' ? params.Fc : params.Fb;
-    if (markerFreq) {
-      const mx = freqToX(markerFreq);
+    // Marqueur fréquence d'accord / système
+    const markerF = type === 'sealed' ? params.Fc : params.Fb;
+    if (markerF) {
+      const mx = fx(markerF);
       ctx.beginPath();
       ctx.strokeStyle = '#10b981';
       ctx.lineWidth   = 1.5;
       ctx.setLineDash([4, 3]);
-      ctx.moveTo(mx, pad.top);
-      ctx.lineTo(mx, pad.top + ch);
+      ctx.moveTo(mx, pad.top); ctx.lineTo(mx, pad.top + ch);
       ctx.stroke();
       ctx.setLineDash([]);
-
-      ctx.fillStyle = '#10b981';
-      ctx.font      = 'bold 10px monospace';
-      ctx.textAlign = 'center';
-      const label   = type === 'sealed' ? 'Fc' : 'Fb';
-      ctx.fillText(`${label} ${Math.round(markerFreq)}Hz`, mx, pad.top + 10);
+      ctx.fillStyle  = '#10b981';
+      ctx.font       = 'bold 10px monospace';
+      ctx.textAlign  = 'center';
+      ctx.fillText((type === 'sealed' ? 'Fc' : 'Fb') + ' ' + Math.round(markerF) + 'Hz', mx, pad.top + 11);
     }
 
-    // Marker: f3
+    // Marqueur f3
     if (params.f3) {
-      const f3x = freqToX(params.f3);
-      ctx.beginPath();
-      ctx.strokeStyle = 'rgba(245,158,11,0.7)';
+      const f3x = fx(Math.max(params.f3, fMin + 1));
+      ctx.strokeStyle = 'rgba(245,158,11,0.8)';
       ctx.lineWidth   = 1;
-      ctx.moveTo(f3x, db3y - 6);
-      ctx.lineTo(f3x, db3y + 6);
+      ctx.beginPath();
+      ctx.moveTo(f3x, y3 - 5); ctx.lineTo(f3x, y3 + 5);
       ctx.stroke();
-      ctx.fillStyle = '#f59e0b';
-      ctx.font      = 'bold 10px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(`f3 ${Math.round(params.f3)}Hz`, f3x, db3y - 10);
+      ctx.fillStyle  = '#f59e0b';
+      ctx.font       = 'bold 10px monospace';
+      ctx.textAlign  = 'center';
+      ctx.fillText('f3 ' + Math.round(params.f3) + 'Hz', f3x, y3 - 8);
     }
   }
 
-  _response(f, type, params) {
+  _response(f, type, p) {
     if (type === 'sealed') {
-      const { Fc, Qtc } = params;
-      const Ω = f / Fc;
-      return 20 * Math.log10(
-        (Ω * Ω) / Math.sqrt((1 - Ω * Ω) ** 2 + (Ω / Qtc) ** 2)
-      );
+      const Ω = f / p.Fc;
+      const H = (Ω * Ω) / Math.sqrt((1 - Ω * Ω) ** 2 + (Ω / p.Qtc) ** 2);
+      return 20 * Math.log10(Math.max(H, 1e-12));
     }
-
     if (type === 'ported') {
-      const { Fb, Qb = 0.707 } = params;
-      // Approximate 4th-order high-pass using two 2nd-order stages
-      const Ω1 = f / Fb;
-      const Q1 = 0.5, Q2 = 0.5 * Qb;
-      const H1 = (Ω1 * Ω1) / Math.sqrt((1 - Ω1 * Ω1) ** 2 + (Ω1 / Q1) ** 2);
-      const H2 = (Ω1 * Ω1) / Math.sqrt((1 - Ω1 * Ω1) ** 2 + (Ω1 / Q2) ** 2);
-      return 20 * Math.log10(Math.max(H1 * H2, 1e-10));
+      const Ω = f / p.Fb;
+      const Q = p.Qb ?? 0.7;
+      // Approx 4th-order HP: produit de deux 2nd-order
+      const H1 = (Ω*Ω) / Math.sqrt((1-Ω*Ω)**2 + (Ω/(Q*0.6))**2);
+      const H2 = (Ω*Ω) / Math.sqrt((1-Ω*Ω)**2 + (Ω*Q*1.2)**2);
+      return 20 * Math.log10(Math.max(H1 * H2, 1e-12));
     }
-
     if (type === 'bandpass') {
-      const { f_low, f_high } = params;
-      const Fc_mid = Math.sqrt(f_low * f_high);
-      const Ω     = f / Fc_mid;
-      const bw    = f_high / Fc_mid;
-      const Q     = Fc_mid / (f_high - f_low);
-      const H     = (Ω / Q) / Math.sqrt((1 - Ω * Ω) ** 2 + (Ω / Q) ** 2);
-      return 20 * Math.log10(Math.max(H, 1e-10));
+      const Fc_m = Math.sqrt(p.f_low * p.f_high);
+      const Ω    = f / Fc_m;
+      const BW   = p.f_high / Fc_m;
+      const Q    = 1 / (BW - 1 / BW);
+      const H    = (Ω / Math.abs(Q)) / Math.sqrt((1 - Ω*Ω)**2 + (Ω/Math.abs(Q))**2);
+      return 20 * Math.log10(Math.max(H, 1e-12));
     }
-
     return -60;
   }
 }
@@ -287,9 +308,9 @@ class FrequencyChart {
 // ============================================================
 class EnclosureViewer {
   constructor(canvas) {
-    this.canvas  = canvas;
-    this.running = false;
+    this.canvas     = canvas;
     this._wireframe = false;
+    this._built     = false;
     this._initScene();
     this._initLights();
     this._initControls();
@@ -297,50 +318,45 @@ class EnclosureViewer {
     this._startLoop();
   }
 
+  // ── Initialisation ────────────────────────────────────────
   _initScene() {
     const w = this.canvas.clientWidth  || 800;
-    const h = this.canvas.clientHeight || 500;
+    const h = this.canvas.clientHeight || 450;
 
-    this.renderer = new THREE.WebGLRenderer({
-      canvas:    this.canvas,
-      antialias: true,
-      alpha:     false,
-    });
+    this.renderer = new THREE.WebGLRenderer({ canvas: this.canvas, antialias: true });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(w, h, false);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type    = THREE.PCFSoftShadowMap;
     this.renderer.toneMapping       = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.1;
+    this.renderer.toneMappingExposure = 1.15;
+    this.renderer.setClearColor(0x0c1829, 1);
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0x0c1829);
-    this.scene.fog = new THREE.Fog(0x0c1829, 3.5, 8);
+    this.scene.fog = new THREE.FogExp2(0x0c1829, 0.08);
 
-    this.camera = new THREE.PerspectiveCamera(42, w / h, 0.01, 20);
-    this.camera.position.set(0.7, 0.55, 1.0);
+    this.camera = new THREE.PerspectiveCamera(42, w / h, 0.005, 20);
+    this.camera.position.set(0.7, 0.55, 1.1);
 
     this.group = new THREE.Group();
     this.scene.add(this.group);
   }
 
   _initLights() {
-    const ambient = new THREE.AmbientLight(0xcce0ff, 0.5);
-    this.scene.add(ambient);
+    this.scene.add(new THREE.AmbientLight(0xd0e8ff, 0.55));
 
-    const sun = new THREE.DirectionalLight(0xfff8f0, 1.2);
-    sun.position.set(2, 4, 3);
-    sun.castShadow = true;
-    sun.shadow.mapSize.set(1024, 1024);
-    sun.shadow.camera.near = 0.1;
-    sun.shadow.camera.far  = 10;
-    this.scene.add(sun);
+    const key = new THREE.DirectionalLight(0xfff8f0, 1.1);
+    key.position.set(2, 4, 3);
+    key.castShadow = true;
+    key.shadow.mapSize.set(1024, 1024);
+    this.scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0x4477aa, 0.5);
-    fill.position.set(-3, 1, -2);
+    const fill = new THREE.DirectionalLight(0x3366bb, 0.45);
+    fill.position.set(-3, 0.5, -2);
     this.scene.add(fill);
 
-    const rim = new THREE.DirectionalLight(0x00d4ff, 0.3);
+    const rim = new THREE.DirectionalLight(0x00ccee, 0.25);
     rim.position.set(0, -2, -3);
     this.scene.add(rim);
   }
@@ -349,102 +365,134 @@ class EnclosureViewer {
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.controls.enableDamping  = true;
     this.controls.dampingFactor  = 0.06;
-    this.controls.minDistance    = 0.25;
+    this.controls.minDistance    = 0.2;
     this.controls.maxDistance    = 4;
     this.controls.autoRotate     = true;
-    this.controls.autoRotateSpeed = 0.8;
+    this.controls.autoRotateSpeed = 0.6;
   }
 
   _addEnvironment() {
-    // Floor grid
-    const grid = new THREE.GridHelper(6, 60, 0x1e3a5f, 0x152035);
-    grid.position.y = -0.6;
-    this.scene.add(grid);
-    this._grid = grid;
+    this._grid = new THREE.GridHelper(6, 60, 0x1e3a5f, 0x152035);
+    this._grid.position.y = -0.5;
+    this.scene.add(this._grid);
   }
 
-  /** Build the 3D enclosure */
-  build(type, dims, driverDiam_mm, portDiam_mm, portLen_cm) {
-    // Clear previous
+  // ── Calcul des positions HP et évent sur le panneau avant ─
+  _computeLayout(numSubs, h, w, driverR, portR) {
+    const gap = Math.max(0.02, h * 0.04);
+    let speakers, port = null;
+
+    if (numSubs === 1) {
+      if (portR > 0) {
+        // HP légèrement au-dessus du centre
+        const spkY     = h * 0.12;
+        const portY    = Math.max(
+          spkY - driverR - gap - portR,
+          -h / 2 + portR + gap
+        );
+        speakers = [{ x: 0, y: spkY }];
+        port     = { x: 0, y: portY };
+      } else {
+        speakers = [{ x: 0, y: 0 }];
+      }
+    } else {
+      // Double sub — HPs empilés verticalement
+      if (portR > 0) {
+        const spk1Y = h * 0.30;
+        const spk2Y = spk1Y - driverR - gap - driverR;
+        const portY = Math.max(
+          spk2Y - driverR - gap - portR,
+          -h / 2 + portR + gap
+        );
+        speakers = [{ x: 0, y: spk1Y }, { x: 0, y: spk2Y }];
+        port     = { x: 0, y: portY };
+      } else {
+        const spk1Y =  h * 0.22;
+        const spk2Y = -h * 0.22;
+        speakers = [{ x: 0, y: spk1Y }, { x: 0, y: spk2Y }];
+      }
+    }
+    return { speakers, port };
+  }
+
+  // ── Construction principale ──────────────────────────────
+  build(type, dims, numSubs, driverDiam_mm, portDiam_mm, portLen_cm) {
+    // Vider le groupe
     while (this.group.children.length > 0) {
-      const child = this.group.children[0];
-      if (child.geometry) child.geometry.dispose();
-      this.group.remove(child);
+      const c = this.group.children[0];
+      if (c.geometry) c.geometry.dispose();
+      this.group.remove(c);
     }
 
-    const { W, H, D } = dims.external; // cm → convert to meters
-    const w = W / 100, h = H / 100, d = D / 100;
-    const t = 0.018; // panel thickness 18 mm in metres
+    const { W, H, D } = dims.external;
+    const w = W / 100, h = H / 100, d = D / 100;   // cm → m
+    const t = 0.018;                                 // épaisseur panneau 18mm
 
-    // Move grid below box
-    this._grid.position.y = -h / 2 - 0.005;
+    const driverR = (driverDiam_mm / 2) / 1000;
+    const portR   = (type === 'ported' && portDiam_mm > 0) ? (portDiam_mm / 2) / 1000 : 0;
 
-    // Adjust camera distance based on box size
+    // Positions cohérentes HP + évent
+    const layout  = this._computeLayout(numSubs, h, w, driverR, portR);
+
+    // Grille sous le caisson
+    this._grid.position.y = -h / 2 - 0.01;
+
+    // Matériaux
+    const matWood  = this._woodMat(0x7A5C18);
+    const matFront = this._woodMat(0x6B4F14);
+
+    // Panneaux (sans la face avant)
+    this._addPanel(w,       h,       t,       0,           0,            -d/2 + t/2, matWood); // arrière
+    this._addPanel(t,       h,       d - 2*t, -w/2 + t/2, 0,            0,           matWood); // gauche
+    this._addPanel(t,       h,       d - 2*t,  w/2 - t/2, 0,            0,           matWood); // droite
+    this._addPanel(w,       t,       d - t,   0,           h/2 - t/2,  -t/2,          matWood); // dessus
+    this._addPanel(w,       t,       d - t,   0,          -h/2 + t/2,  -t/2,          matWood); // dessous
+
+    // Panneau avant avec découpes HP (et évent)
+    this._buildFrontPanel(w, h, t, d, driverR, layout.speakers,
+                          portR > 0 ? portR   : 0,
+                          portR > 0 ? layout.port : null,
+                          matFront);
+
+    // HPs
+    layout.speakers.forEach(pos => this._buildSpeaker(driverR, d / 2, pos.x, pos.y));
+
+    // Évent
+    if (portR > 0 && layout.port) {
+      const portLen_m = Math.max((portLen_cm || 20) / 100, 0.05);
+      this._buildPort(portR, portLen_m, d / 2, layout.port.x, layout.port.y);
+    }
+
+    // Vis décoratives sur les coins
+    this._addCornerScrews(w, h, d);
+
+    // Ajuster la caméra
     const maxDim = Math.max(w, h, d);
-    this.camera.position.set(maxDim * 1.7, maxDim * 1.2, maxDim * 2.2);
+    this.camera.position.set(maxDim * 1.8, maxDim * 1.2, maxDim * 2.3);
     this.controls.target.set(0, 0, 0);
     this.controls.update();
 
-    // ── Materials ──
-    const woodMat = new THREE.MeshStandardMaterial({
-      color:     0x8B6325,
-      roughness: 0.82,
-      metalness: 0.0,
-    });
-    const woodFront = new THREE.MeshStandardMaterial({
-      color:     0x7A5620,
-      roughness: 0.78,
-      metalness: 0.0,
-    });
-
-    // ── Panels: back, left, right, top, bottom ──
-    const panels = [
-      // back
-      { size: [w,       h,       t],         pos: [0,          0,          -d/2 + t/2] },
-      // left
-      { size: [t,       h,       d - 2*t],   pos: [-w/2 + t/2, 0,          0]          },
-      // right
-      { size: [t,       h,       d - 2*t],   pos: [w/2  - t/2, 0,          0]          },
-      // top
-      { size: [w,       t,       d - t],     pos: [0,          h/2 - t/2,  -t/2]       },
-      // bottom
-      { size: [w,       t,       d - t],     pos: [0,          -h/2 + t/2, -t/2]       },
-    ];
-
-    panels.forEach(({ size, pos }) => {
-      const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(...size),
-        woodMat
-      );
-      mesh.position.set(...pos);
-      mesh.castShadow = mesh.receiveShadow = true;
-      this.group.add(mesh);
-    });
-
-    // ── Front panel with speaker (and port) hole ──
-    const driverR   = (driverDiam_mm / 2) / 1000; // m
-    const portR     = portDiam_mm ? (portDiam_mm / 2) / 1000 : 0;
-    const portY_offset = -h * 0.22;
-
-    this._buildFrontPanel(w, h, t, d, driverR,
-      type === 'ported' ? portR : 0,
-      portY_offset, woodFront);
-
-    // ── Speaker driver ──
-    this._buildSpeaker(driverR, d / 2, 0, h * 0.1);
-
-    // ── Port tube ──
-    if (type === 'ported' && portR > 0) {
-      const portLen_m = (portLen_cm || 20) / 100;
-      this._buildPort(portR, portLen_m, d / 2, 0, portY_offset);
-    }
-
-    // ── Store material refs for wireframe toggle ──
-    this._materials = [woodMat, woodFront];
+    // Référence pour le toggle wireframe
+    this._allMeshes = [];
+    this.group.traverse(c => { if (c.isMesh) this._allMeshes.push(c); });
     this._applyWireframe(this._wireframe);
+    this._built = true;
   }
 
-  _buildFrontPanel(w, h, t, d, speakerR, portR, portY, mat) {
+  _woodMat(color) {
+    return new THREE.MeshStandardMaterial({ color, roughness: 0.82, metalness: 0.0 });
+  }
+
+  _addPanel(sx, sy, sz, px, py, pz, mat) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz), mat);
+    m.position.set(px, py, pz);
+    m.castShadow = m.receiveShadow = true;
+    this.group.add(m);
+    return m;
+  }
+
+  // ── Panneau avant avec découpes (ExtrudeGeometry + holes) ─
+  _buildFrontPanel(w, h, t, d, speakerR, speakerPositions, portR, portPos, mat) {
     const shape = new THREE.Shape();
     shape.moveTo(-w/2, -h/2);
     shape.lineTo( w/2, -h/2);
@@ -452,104 +500,129 @@ class EnclosureViewer {
     shape.lineTo(-w/2,  h/2);
     shape.closePath();
 
-    // Speaker cutout
-    const speakerHole = new THREE.Path();
-    speakerHole.absarc(0, h * 0.1, speakerR, 0, Math.PI * 2, true);
-    shape.holes.push(speakerHole);
+    // Découpes HP — coordonnées = positions dans le plan XY du shape
+    speakerPositions.forEach(pos => {
+      const hole = new THREE.Path();
+      hole.absarc(pos.x, pos.y, speakerR, 0, Math.PI * 2, true);
+      shape.holes.push(hole);
+    });
 
-    // Port cutout
-    if (portR > 0) {
-      const portHole = new THREE.Path();
-      portHole.absarc(0, portY, portR, 0, Math.PI * 2, true);
-      shape.holes.push(portHole);
+    // Découpe évent
+    if (portR > 0 && portPos) {
+      const hole = new THREE.Path();
+      hole.absarc(portPos.x, portPos.y, portR, 0, Math.PI * 2, true);
+      shape.holes.push(hole);
     }
 
-    const geo = new THREE.ExtrudeGeometry(shape, { depth: t, bevelEnabled: false });
+    const geo  = new THREE.ExtrudeGeometry(shape, { depth: t, bevelEnabled: false });
     const mesh = new THREE.Mesh(geo, mat);
+    // Le shape est en Z=0..t → on positionne pour que la face avant soit à d/2
     mesh.position.set(0, 0, d / 2 - t);
     mesh.castShadow = mesh.receiveShadow = true;
     this.group.add(mesh);
   }
 
+  // ── Haut-parleur ─────────────────────────────────────────
   _buildSpeaker(radius, faceZ, cx, cy) {
+    // Le HP est monté en encastré, sa face avant affleure la face externe du panneau
     const z = faceZ + 0.001;
 
-    // Outer ring / frame
-    const frameMat = new THREE.MeshStandardMaterial({ color: 0x1a202c, roughness: 0.6 });
-    const frameGeo = new THREE.RingGeometry(radius * 0.86, radius, 72);
-    const frame    = new THREE.Mesh(frameGeo, frameMat);
-    frame.position.set(cx, cy, z);
-    this.group.add(frame);
+    // Cadre / anneau externe
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.6 });
+    this.group.add(Object.assign(
+      new THREE.Mesh(new THREE.RingGeometry(radius * 0.85, radius, 72), frameMat),
+      { position: new THREE.Vector3(cx, cy, z) }
+    ));
 
-    // Surround (torus)
-    const surroundMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9 });
-    const surround    = new THREE.Mesh(
-      new THREE.TorusGeometry(radius * 0.88, radius * 0.065, 16, 72),
-      surroundMat
+    // Suspension (tore)
+    const surrMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.95 });
+    const surround = new THREE.Mesh(
+      new THREE.TorusGeometry(radius * 0.875, radius * 0.07, 16, 72), surrMat
     );
-    surround.position.set(cx, cy, z - 0.002);
+    surround.rotation.x = Math.PI / 2;
+    surround.position.set(cx, cy, z - 0.003);
     this.group.add(surround);
 
-    // Cone
+    // Membrane (cône)
     const coneMat = new THREE.MeshStandardMaterial({
-      color:     0x374151,
-      roughness: 0.95,
-      side:      THREE.DoubleSide,
+      color: 0x374151, roughness: 0.95, side: THREE.DoubleSide
     });
     const cone = new THREE.Mesh(
-      new THREE.ConeGeometry(radius * 0.82, 0.05, 72, 1, true),
-      coneMat
+      new THREE.ConeGeometry(radius * 0.80, 0.055, 72, 1, true), coneMat
     );
     cone.rotation.x = Math.PI / 2;
-    cone.position.set(cx, cy, z - 0.025);
+    cone.position.set(cx, cy, z - 0.026);
     this.group.add(cone);
 
-    // Dust cap
-    const dustMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.5 });
-    const dust    = new THREE.Mesh(new THREE.CircleGeometry(radius * 0.22, 48), dustMat);
-    dust.position.set(cx, cy, z + 0.002);
+    // Cache-poussière
+    const dustMat = new THREE.MeshStandardMaterial({ color: 0x0c1420, roughness: 0.4 });
+    const dust = new THREE.Mesh(new THREE.CircleGeometry(radius * 0.22, 48), dustMat);
+    dust.position.set(cx, cy, z + 0.001);
     this.group.add(dust);
 
-    // Basket bolts (4 small cylinders)
+    // Boulons de fixation (×4)
+    const boltMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 });
     for (let i = 0; i < 4; i++) {
-      const angle = (i / 4) * Math.PI * 2 + Math.PI / 4;
-      const bx    = cx + Math.cos(angle) * radius * 0.94;
-      const by    = cy + Math.sin(angle) * radius * 0.94;
-      const bolt  = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.003, 0.003, 0.012, 8),
-        new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8, roughness: 0.3 })
+      const a   = (i / 4) * Math.PI * 2 + Math.PI / 4;
+      const bx  = cx + Math.cos(a) * radius * 0.95;
+      const by  = cy + Math.sin(a) * radius * 0.95;
+      const bolt = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.003, 0.003, 0.01, 8), boltMat
       );
       bolt.rotation.x = Math.PI / 2;
-      bolt.position.set(bx, by, z - 0.003);
+      bolt.position.set(bx, by, z - 0.002);
       this.group.add(bolt);
     }
   }
 
+  // ── Évent (tube) ─────────────────────────────────────────
   _buildPort(radius, length, faceZ, cx, cy) {
-    const portMat = new THREE.MeshStandardMaterial({
-      color:     0x1e293b,
-      roughness: 0.7,
-      metalness: 0.1,
-    });
-    // Outer tube
+    const portMat  = new THREE.MeshStandardMaterial({ color: 0x1a2540, roughness: 0.7 });
+    const innerMat = new THREE.MeshStandardMaterial({ color: 0x03060d });
+
+    // Tube — CylindreGeo par défaut le long de Y → rotation.x pour l'aligner sur Z
     const tube = new THREE.Mesh(
-      new THREE.CylinderGeometry(radius, radius, length, 48),
-      portMat
+      new THREE.CylinderGeometry(radius, radius, length, 48), portMat
     );
     tube.rotation.x = Math.PI / 2;
+    // Centre du cylindre = faceZ - length/2
+    // → face avant du tube (vers l'extérieur) à faceZ
+    // → face arrière (intérieur du caisson) à faceZ - length
     tube.position.set(cx, cy, faceZ - length / 2);
     this.group.add(tube);
 
-    // Inner dark opening
-    const innerMat = new THREE.MeshStandardMaterial({ color: 0x050b14 });
-    const inner    = new THREE.Mesh(
-      new THREE.CircleGeometry(radius * 0.93, 48),
-      innerMat
+    // Ouverture sombre côté extérieur
+    const opening = new THREE.Mesh(
+      new THREE.CircleGeometry(radius * 0.93, 48), innerMat
     );
-    inner.position.set(cx, cy, faceZ + 0.002);
-    this.group.add(inner);
+    opening.position.set(cx, cy, faceZ + 0.0015);
+    this.group.add(opening);
+
+    // Rebord (flange) visible sur la façade
+    const flangeMat = new THREE.MeshStandardMaterial({ color: 0x0a1020, roughness: 0.6 });
+    const flange = new THREE.Mesh(
+      new THREE.RingGeometry(radius * 0.93, radius * 1.03, 48), flangeMat
+    );
+    flange.position.set(cx, cy, faceZ + 0.001);
+    this.group.add(flange);
   }
 
+  // ── Vis décoratives aux coins de la façade ───────────────
+  _addCornerScrews(w, h, d) {
+    const screwMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8, roughness: 0.3 });
+    const fz = d / 2 + 0.001;
+    const inset = 0.022;
+    const corners = [[-w/2+inset, -h/2+inset], [w/2-inset, -h/2+inset],
+                     [-w/2+inset,  h/2-inset], [w/2-inset,  h/2-inset]];
+    corners.forEach(([x, y]) => {
+      const s = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.008, 8), screwMat);
+      s.rotation.x = Math.PI / 2;
+      s.position.set(x, y, fz);
+      this.group.add(s);
+    });
+  }
+
+  // ── Contrôles ─────────────────────────────────────────────
   toggleWireframe() {
     this._wireframe = !this._wireframe;
     this._applyWireframe(this._wireframe);
@@ -557,17 +630,16 @@ class EnclosureViewer {
   }
 
   _applyWireframe(state) {
-    this.group.traverse(child => {
-      if (child.isMesh && child.material) {
-        const mats = Array.isArray(child.material)
-          ? child.material : [child.material];
+    this.group.traverse(c => {
+      if (c.isMesh && c.material) {
+        const mats = Array.isArray(c.material) ? c.material : [c.material];
         mats.forEach(m => { m.wireframe = state; });
       }
     });
   }
 
   resetCamera() {
-    this.camera.position.set(0.7, 0.55, 1.0);
+    this.camera.position.set(0.7, 0.55, 1.1);
     this.controls.target.set(0, 0, 0);
     this.controls.update();
   }
@@ -582,9 +654,7 @@ class EnclosureViewer {
   }
 
   _startLoop() {
-    this.running = true;
     const loop = () => {
-      if (!this.running) return;
       requestAnimationFrame(loop);
       this.controls.update();
       this.renderer.render(this.scene, this.camera);
@@ -594,16 +664,6 @@ class EnclosureViewer {
 }
 
 // ============================================================
-//  PRESETS
-// ============================================================
-const PRESETS = {
-  sub10: { Fs: 42, Qts: 0.40, Qes: 0.48, Qms: 3.2, Vas: 22,  Xmax: 9,  Re: 3.5, diameter: 250, power: 250 },
-  sub12: { Fs: 35, Qts: 0.35, Qes: 0.40, Qms: 3.5, Vas: 40,  Xmax: 12, Re: 3.2, diameter: 305, power: 400 },
-  sub15: { Fs: 28, Qts: 0.30, Qes: 0.34, Qms: 3.8, Vas: 80,  Xmax: 16, Re: 2.8, diameter: 380, power: 600 },
-  sub18: { Fs: 22, Qts: 0.27, Qes: 0.31, Qms: 4.1, Vas: 140, Xmax: 20, Re: 2.4, diameter: 460, power: 1000 },
-};
-
-// ============================================================
 //  APP CONTROLLER
 // ============================================================
 class App {
@@ -611,57 +671,163 @@ class App {
     this._viewer  = null;
     this._chart   = null;
     this._results = null;
+    this._activeType    = 'sealed';
+    this._doubleSub     = false;
+    this._doubleSubMode = 'parallel';
 
-    this._bindPreset();
+    this._checkApi().then(() => this._loadBrands());
     this._bindTabs();
+    this._bindPresets();
+    this._bindDoubleSub();
     this._bindCalculate();
     this._bindButtons();
     this._bindResize();
   }
 
-  // ── Presets ──────────────────────────────────────────────
-  _bindPreset() {
-    document.getElementById('preset-select').addEventListener('change', e => {
-      const p = PRESETS[e.target.value];
-      if (!p) return;
-      Object.entries(p).forEach(([key, val]) => {
-        const el = document.getElementById(key);
-        if (el) el.value = val;
-      });
-    });
+  // ── API ──────────────────────────────────────────────────
+  async _checkApi() {
+    try {
+      const res = await fetch(API_BASE + '/health', { signal: AbortSignal.timeout(2000) });
+      apiAvailable = res.ok;
+    } catch { apiAvailable = false; }
+
+    const banner = document.getElementById('api-status');
+    if (banner) {
+      banner.textContent = apiAvailable
+        ? '✅ Connecté à la base de données MySQL'
+        : '⚡ Mode hors-ligne — données intégrées (démarrez server.js pour MySQL)';
+      banner.className = apiAvailable ? 'api-ok' : 'api-offline';
+    }
   }
 
-  // ── Tabs (enclosure type) ─────────────────────────────────
+  async _loadBrands() {
+    const brands = apiAvailable
+      ? await apiFetch('/brands').catch(() => STATIC_BRANDS)
+      : STATIC_BRANDS;
+
+    const sel = document.getElementById('db-brand');
+    if (!sel) return;
+    brands.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = b.name + (b.country ? ' (' + b.country + ')' : '');
+      sel.appendChild(opt);
+    });
+
+    sel.addEventListener('change', () => this._loadModels(sel.value));
+  }
+
+  async _loadModels(brandId) {
+    const modSel = document.getElementById('db-model');
+    const btn    = document.getElementById('db-load-btn');
+    modSel.innerHTML = '<option value="">— Choisir un modèle —</option>';
+    if (!brandId) return;
+
+    const models = apiAvailable
+      ? await apiFetch(`/subwoofers?brand_id=${brandId}`).catch(
+          () => STATIC_SUBS.filter(s => s.brand_id == brandId))
+      : STATIC_SUBS.filter(s => s.brand_id == brandId);
+
+    models.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.model + ' — ' + (m.power_rms || '?') + 'W  ' + (m.voice_coil || '');
+      modSel.appendChild(opt);
+    });
+    btn.disabled = false;
+
+    modSel.addEventListener('change', () => { btn.disabled = !modSel.value; });
+  }
+
+  async _loadSubwoofer() {
+    const id = document.getElementById('db-model').value;
+    if (!id) return;
+
+    const sub = apiAvailable
+      ? await apiFetch(`/subwoofers/${id}`).catch(
+          () => STATIC_SUBS.find(s => s.id == id))
+      : STATIC_SUBS.find(s => s.id == id);
+
+    if (!sub) return;
+
+    const map = { Fs: sub.fs, Qts: sub.qts, Qes: sub.qes, Qms: sub.qms,
+                  Vas: sub.vas, Xmax: sub.xmax, Re: sub.re,
+                  diameter: sub.diameter_mm, power: sub.power_rms || 400 };
+    Object.entries(map).forEach(([k, v]) => {
+      const el = document.getElementById(k);
+      if (el && v != null) el.value = v;
+    });
+
+    // Recommandation de type
+    if (sub.recommended_type && sub.recommended_type !== 'both') {
+      document.querySelector(`.tab-btn[data-type="${sub.recommended_type}"]`)?.click();
+    }
+
+    document.getElementById('db-loaded-name').textContent = sub.model;
+    document.getElementById('db-loaded-band').classList.remove('hidden');
+
+    // Auto-remplir Fb si ported
+    if (sub.fs) {
+      const fbInput = document.getElementById('Fb');
+      if (fbInput && !fbInput.value) fbInput.value = Math.round(sub.fs * 0.707);
+    }
+  }
+
+  // ── Tabs ─────────────────────────────────────────────────
   _bindTabs() {
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-
         document.querySelectorAll('.type-options').forEach(o => o.classList.add('hidden'));
-        const type = btn.dataset.type;
-        document.getElementById(`opts-${type}`)?.classList.remove('hidden');
-        this._activeType = type;
+        this._activeType = btn.dataset.type;
+        document.getElementById(`opts-${this._activeType}`)?.classList.remove('hidden');
       });
     });
-    this._activeType = 'sealed';
+  }
+
+  // ── Présets manuels ──────────────────────────────────────
+  _bindPresets() {
+    const PRESETS = {
+      sub10: { Fs:42, Qts:0.40, Qes:0.48, Qms:3.2, Vas:22,  Xmax:9,  Re:3.5, diameter:250, power:250 },
+      sub12: { Fs:35, Qts:0.35, Qes:0.40, Qms:3.5, Vas:40,  Xmax:12, Re:3.2, diameter:305, power:400 },
+      sub15: { Fs:28, Qts:0.30, Qes:0.34, Qms:3.8, Vas:80,  Xmax:16, Re:2.8, diameter:380, power:600 },
+      sub18: { Fs:22, Qts:0.27, Qes:0.31, Qms:4.1, Vas:140, Xmax:20, Re:2.4, diameter:460, power:1000 },
+    };
+    document.getElementById('preset-select')?.addEventListener('change', e => {
+      const p = PRESETS[e.target.value]; if (!p) return;
+      Object.entries(p).forEach(([k, v]) => {
+        const el = document.getElementById(k); if (el) el.value = v;
+      });
+    });
+  }
+
+  // ── Double Sub ───────────────────────────────────────────
+  _bindDoubleSub() {
+    const toggle  = document.getElementById('double-sub-toggle');
+    const options = document.getElementById('double-sub-options');
+    toggle?.addEventListener('change', () => {
+      this._doubleSub = toggle.checked;
+      options?.classList.toggle('hidden', !this._doubleSub);
+    });
+    document.querySelectorAll('input[name="double-sub-mode"]').forEach(r => {
+      r.addEventListener('change', () => { this._doubleSubMode = r.value; });
+    });
   }
 
   // ── Calculate ────────────────────────────────────────────
   _bindCalculate() {
-    document.getElementById('btn-calculate').addEventListener('click', () => {
-      try {
-        this._calculate();
-      } catch (err) {
-        alert('Erreur : ' + err.message);
-      }
+    document.getElementById('btn-calculate')?.addEventListener('click', () => {
+      try { this._calculate(); }
+      catch (err) { alert('Erreur de calcul : ' + err.message); }
     });
+    document.getElementById('db-load-btn')?.addEventListener('click', () => this._loadSubwoofer());
   }
 
   _getNum(id) {
-    const val = parseFloat(document.getElementById(id).value);
-    if (isNaN(val)) throw new Error(`Valeur manquante pour "${id}"`);
-    return val;
+    const v = parseFloat(document.getElementById(id)?.value);
+    if (isNaN(v)) throw new Error(`Valeur manquante : champ "${id}"`);
+    return v;
   }
 
   _calculate() {
@@ -675,163 +841,171 @@ class App {
     const diameter = this._getNum('diameter');
     const power    = this._getNum('power');
     const type     = this._activeType;
+    const numSubs  = this._doubleSub ? 2 : 1;
 
     let calc, panelThick, portDiam_mm = 0, portLen_cm = 0, portCount = 1;
 
     if (type === 'sealed') {
-      const Qtc  = this._getNum('Qtc');
       panelThick = this._getNum('panel-thick-sealed');
+      const Qtc  = this._getNum('Qtc');
       calc       = Calculator.sealed(Fs, Qts, Vas, Qtc);
 
     } else if (type === 'ported') {
-      const Fb_input = parseFloat(document.getElementById('Fb').value);
-      const Fb_val   = isNaN(Fb_input) ? null : Fb_input;
-      portDiam_mm    = this._getNum('port-diam');
-      portCount      = parseInt(document.getElementById('port-count').value) || 1;
-      panelThick     = this._getNum('panel-thick-ported');
-      calc           = Calculator.ported(Fs, Qts, Vas, Fb_val);
-      portLen_cm     = Calculator.portLength(calc.Fb, calc.Vb, portDiam_mm, portCount);
+      panelThick  = this._getNum('panel-thick-ported');
+      const Fb_v  = parseFloat(document.getElementById('Fb').value);
+      portDiam_mm = this._getNum('port-diam');
+      portCount   = parseInt(document.getElementById('port-count').value) || 1;
+      calc        = Calculator.ported(Fs, Qts, Vas, isNaN(Fb_v) ? null : Fb_v);
+      portLen_cm  = Calculator.portLength(calc.Fb, calc.Vb, portDiam_mm, portCount);
       calc.portLen   = portLen_cm;
       calc.portDiam  = portDiam_mm;
       calc.portCount = portCount;
 
-    } else { // bandpass
+    } else {
+      panelThick = this._getNum('panel-thick-bp');
       const ratio = this._getNum('bp-ratio');
-      panelThick  = this._getNum('panel-thick-bp');
-      calc        = Calculator.bandpass(Fs, Qts, Vas, ratio);
+      calc = Calculator.bandpass(Fs, Qts, Vas, ratio);
     }
 
-    const dims = Calculator.boxDimensions(calc.Vb, diameter, panelThick);
+    // Application du double sub
+    if (numSubs === 2) {
+      const factor = this._doubleSubMode === 'isobaric' ? 0.5 : 2;
+      if (type === 'bandpass') {
+        calc.Vb_front *= factor;
+        calc.Vb_back  *= factor;
+        calc.Vb       *= factor;
+      } else {
+        calc.Vb *= factor;
+      }
+      if (type === 'ported') {
+        portLen_cm = Calculator.portLength(calc.Fb, calc.Vb, portDiam_mm, portCount);
+        calc.portLen = portLen_cm;
+      }
+    }
 
-    this._results = { type, calc, dims, Fs, Qts, Vas, Xmax, diameter, power, portDiam_mm, portLen_cm };
+    const dims = Calculator.boxDimensions(calc.Vb, diameter, panelThick, numSubs);
+    this._results = { type, calc, dims, Fs, Qts, Vas, Xmax, diameter, power,
+                      portDiam_mm, portLen_cm, numSubs, doubleSubMode: this._doubleSubMode };
 
     this._renderResults();
     this._render3D();
-
     document.getElementById('section-results').classList.remove('hidden');
     document.getElementById('section-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  // ── Render results panel ─────────────────────────────────
+  // ── Résultats ────────────────────────────────────────────
   _renderResults() {
-    const { type, calc, dims, Fs, Qts, Xmax, diameter, power, portDiam_mm, portLen_cm } = this._results;
+    const { type, calc, dims, diameter, portDiam_mm, portLen_cm, numSubs, doubleSubMode } = this._results;
 
-    // Metrics
-    const metricsEl = document.getElementById('metrics-grid');
-    metricsEl.innerHTML = '';
-
-    const addMetric = (label, value, unit, cls = '') => {
-      metricsEl.innerHTML += `
-        <div class="metric-card ${cls}">
-          <div class="metric-label">${label}</div>
-          <div class="metric-value">${value}<span class="metric-unit"> ${unit}</span></div>
-        </div>`;
+    // Métriques
+    const grid = document.getElementById('metrics-grid');
+    grid.innerHTML = '';
+    const add = (label, val, unit, cls = '') => {
+      grid.innerHTML += `<div class="metric-card ${cls}">
+        <div class="metric-label">${label}</div>
+        <div class="metric-value">${val}<span class="metric-unit"> ${unit}</span></div>
+      </div>`;
     };
-
-    addMetric('Volume interne', calc.Vb.toFixed(1), 'L', 'highlight');
+    add('Volume interne', calc.Vb.toFixed(1), 'L', 'highlight');
 
     if (type === 'sealed') {
-      addMetric('Fréquence système (Fc)', Math.round(calc.Fc), 'Hz');
-      addMetric('Qtc système', calc.Qtc.toFixed(3));
-      addMetric('Fréq. −3 dB (f3)', Math.round(calc.f3), 'Hz', 'highlight');
+      add('Fc système', Math.round(calc.Fc), 'Hz');
+      add('Qtc système', calc.Qtc.toFixed(3));
+      add('f(−3 dB)', Math.round(calc.f3), 'Hz', 'highlight');
     } else if (type === 'ported') {
-      addMetric('Accord évent (Fb)', Math.round(calc.Fb), 'Hz', 'highlight');
-      addMetric('Qtb système', calc.Qb.toFixed(3));
-      addMetric('Fréq. −3 dB (f3)', Math.round(calc.f3), 'Hz');
-      addMetric('Longueur évent', portLen_cm.toFixed(1), 'cm');
+      add('Accord évent Fb', Math.round(calc.Fb), 'Hz', 'highlight');
+      add('Qtb système', (calc.Qb ?? 0).toFixed(3));
+      add('f(−3 dB)', Math.round(calc.f3), 'Hz');
+      add('Long. évent', portLen_cm.toFixed(1), 'cm');
     } else {
-      addMetric('Vol. chambre avant', calc.Vb_front.toFixed(1), 'L');
-      addMetric('Vol. chambre arrière', calc.Vb_back.toFixed(1), 'L');
-      addMetric('Bande passante basse', Math.round(calc.f_low), 'Hz');
-      addMetric('Bande passante haute', Math.round(calc.f_high), 'Hz');
+      add('Vol. chambre avant', calc.Vb_front.toFixed(1), 'L');
+      add('Vol. chambre arrière', calc.Vb_back.toFixed(1), 'L');
+      add('Fréq. basse (−3dB)', Math.round(calc.f_low), 'Hz');
+      add('Fréq. haute (−3dB)', Math.round(calc.f_high), 'Hz');
+    }
+    if (numSubs === 2) {
+      add('Configuration', doubleSubMode === 'isobaric' ? 'Isobarique' : 'Parallèle', '', 'warn');
     }
 
-    // Dimensions table
+    // Dimensions
     const { external: ext, internal: int } = dims;
     const dimsEl = document.getElementById('dims-table');
-    const row = (label, val, unit) =>
-      `<div class="dim-row"><span class="dim-label">${label}</span><span class="dim-val">${val}<span>${unit}</span></span></div>`;
+    const row = (l, v, u) =>
+      `<div class="dim-row"><span class="dim-label">${l}</span><span class="dim-val">${v}<span> ${u}</span></span></div>`;
 
     dimsEl.innerHTML =
-      '<div style="font-size:0.72rem;color:var(--accent);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.06em">Externe (avec panneaux)</div>' +
-      row('Largeur (W)', ext.W.toFixed(1), ' cm') +
-      row('Hauteur (H)', ext.H.toFixed(1), ' cm') +
-      row('Profondeur (D)', ext.D.toFixed(1), ' cm') +
-      row('Volume ext.', ((ext.W * ext.H * ext.D) / 1000).toFixed(1), ' L') +
-      '<div style="font-size:0.72rem;color:var(--muted);margin:0.5rem 0 0.3rem;text-transform:uppercase;letter-spacing:0.06em">Interne</div>' +
-      row('Largeur int.', int.W.toFixed(1), ' cm') +
-      row('Hauteur int.', int.H.toFixed(1), ' cm') +
-      row('Profondeur int.', int.D.toFixed(1), ' cm');
+      `<div class="dims-section-title">Externe (panneaux inclus)</div>` +
+      row('Largeur (W)', ext.W.toFixed(0), 'cm') +
+      row('Hauteur (H)', ext.H.toFixed(0), 'cm') +
+      row('Profondeur (D)', ext.D.toFixed(0), 'cm') +
+      row('Volume ext.', ((ext.W * ext.H * ext.D) / 1000).toFixed(1), 'L') +
+      `<div class="dims-section-title" style="margin-top:.5rem">Interne</div>` +
+      row('Largeur int.', int.W.toFixed(0), 'cm') +
+      row('Hauteur int.', int.H.toFixed(0), 'cm') +
+      row('Profondeur int.', int.D.toFixed(0), 'cm');
 
     if (type === 'ported') {
       dimsEl.innerHTML +=
-        '<div style="font-size:0.72rem;color:var(--accent);margin:0.5rem 0 0.3rem;text-transform:uppercase;letter-spacing:0.06em">Évent</div>' +
-        row('Diamètre évent', portDiam_mm, ' mm') +
-        row('Longueur évent', portLen_cm.toFixed(1), ' cm') +
-        row('Nombre d\'évents', this._results.calc.portCount || 1, '');
+        `<div class="dims-section-title" style="margin-top:.5rem">Évent</div>` +
+        row('Diamètre évent', portDiam_mm, 'mm') +
+        row('Longueur évent', portLen_cm.toFixed(1), 'cm') +
+        row('Nombre d\'évents', calc.portCount || 1, '');
     }
 
-    // Warnings
-    const warnings = [];
-    if (Qts > 0.5 && type === 'ported')
-      warnings.push('Qts élevé (> 0.5) : le caisson évent est moins adapté, préférez un caisson clos.');
-    if (Qts < 0.25 && type === 'sealed')
-      warnings.push('Qts faible (< 0.25) : un caisson évent sera plus efficace.');
+    // Avertissements
+    const warns = [];
+    if (this._results.Qts > 0.5 && type === 'ported')
+      warns.push('Qts > 0.5 : le caisson clos est plus adapté.');
+    if (this._results.Qts < 0.25 && type === 'sealed')
+      warns.push('Qts < 0.25 : un caisson évent sera plus efficace.');
     if (type === 'ported' && portLen_cm < 5)
-      warnings.push('Évent très court (< 5 cm) : risque de bruit d\'air, augmentez le diamètre.');
+      warns.push('Évent très court (< 5 cm) : risque de chuffing. Augmentez le diamètre.');
     if (type === 'ported' && portLen_cm > 80)
-      warnings.push('Évent très long (> 80 cm) : difficile à loger, utilisez 2 évents ou augmentez le diamètre.');
-    if (calc.Vb > 200)
-      warnings.push('Volume très important (> 200 L) : vérifiez vos paramètres T/S.');
+      warns.push('Évent très long (> 80 cm) : utilisez 2 évents ou un diamètre plus grand.');
+    if (calc.Vb > 300)
+      warns.push('Volume très important (> 300 L) : vérifiez vos paramètres T/S.');
+    if (numSubs === 2 && doubleSubMode === 'isobaric')
+      warns.push('Isobarique : le 2ème HP est monté face contre face à l\'intérieur. Volume réduit de moitié.');
 
-    const warnEl = document.getElementById('warnings-box');
-    if (warnings.length > 0) {
-      warnEl.classList.remove('hidden');
-      warnEl.innerHTML = `<ul>${warnings.map(w => `<li>${w}</li>`).join('')}</ul>`;
+    const wEl = document.getElementById('warnings-box');
+    if (warns.length) {
+      wEl.classList.remove('hidden');
+      wEl.innerHTML = `<ul>${warns.map(w => `<li>${w}</li>`).join('')}</ul>`;
     } else {
-      warnEl.classList.add('hidden');
+      wEl.classList.add('hidden');
     }
 
-    // Chart
-    const chartCanvas = document.getElementById('freq-chart');
-    if (!this._chart) this._chart = new FrequencyChart(chartCanvas);
+    // Graphe fréquence
+    const cvs = document.getElementById('freq-chart');
+    if (!this._chart) this._chart = new FrequencyChart(cvs);
     this._chart.draw(type, calc);
   }
 
-  // ── 3D Viewer ────────────────────────────────────────────
+  // ── 3D ───────────────────────────────────────────────────
   _render3D() {
     const canvas = document.getElementById('three-canvas');
-    if (!this._viewer) {
-      this._viewer = new EnclosureViewer(canvas);
-    }
-
-    const { type, calc, dims, diameter, portDiam_mm, portLen_cm } = this._results;
-    this._viewer.build(type, dims, diameter, portDiam_mm, portLen_cm);
+    if (!this._viewer) this._viewer = new EnclosureViewer(canvas);
+    const { type, calc, dims, diameter, portDiam_mm, portLen_cm, numSubs } = this._results;
+    this._viewer.build(type, dims, numSubs, diameter, portDiam_mm, portLen_cm);
   }
 
-  // ── Buttons ───────────────────────────────────────────────
+  // ── Boutons ───────────────────────────────────────────────
   _bindButtons() {
-    document.getElementById('btn-wireframe').addEventListener('click', e => {
+    document.getElementById('btn-wireframe')?.addEventListener('click', e => {
       if (!this._viewer) return;
-      const on = this._viewer.toggleWireframe();
-      e.currentTarget.classList.toggle('active', on);
+      e.currentTarget.classList.toggle('active', this._viewer.toggleWireframe());
     });
-
-    document.getElementById('btn-reset-cam').addEventListener('click', () => {
-      this._viewer?.resetCamera();
-    });
-
-    document.getElementById('btn-copy').addEventListener('click', () => {
+    document.getElementById('btn-reset-cam')?.addEventListener('click', () => this._viewer?.resetCamera());
+    document.getElementById('btn-copy')?.addEventListener('click', () => {
       if (!this._results) return;
-      const { calc, dims, type } = this._results;
-      const { external: ext } = dims;
-      let text = `=== Caisson de basse (${type}) ===\n`;
-      text += `Volume : ${calc.Vb.toFixed(1)} L\n`;
-      text += `Dimensions externes : ${ext.W.toFixed(0)} × ${ext.H.toFixed(0)} × ${ext.D.toFixed(0)} mm\n`;
-      if (type === 'sealed') text += `Fc : ${Math.round(calc.Fc)} Hz | f3 : ${Math.round(calc.f3)} Hz | Qtc : ${calc.Qtc.toFixed(3)}\n`;
-      if (type === 'ported') text += `Fb : ${Math.round(calc.Fb)} Hz | f3 : ${Math.round(calc.f3)} Hz | Évent : Ø${this._results.portDiam_mm}mm × ${calc.portLen?.toFixed(1)}cm\n`;
-
-      navigator.clipboard.writeText(text).then(() => {
+      const { calc, dims, type, portDiam_mm } = this._results;
+      const e = dims.external;
+      let t = `=== Caisson de basse (${type}) ===\n`;
+      t += `Volume : ${calc.Vb.toFixed(1)} L\n`;
+      t += `Ext. : ${e.W.toFixed(0)} × ${e.H.toFixed(0)} × ${e.D.toFixed(0)} cm\n`;
+      if (type === 'sealed') t += `Fc=${Math.round(calc.Fc)}Hz  Qtc=${calc.Qtc.toFixed(3)}  f3=${Math.round(calc.f3)}Hz\n`;
+      if (type === 'ported') t += `Fb=${Math.round(calc.Fb)}Hz  f3=${Math.round(calc.f3)}Hz  Évent: Ø${portDiam_mm}mm × ${calc.portLen?.toFixed(1)}cm\n`;
+      navigator.clipboard.writeText(t).then(() => {
         const toast = document.getElementById('toast');
         toast.classList.remove('hidden');
         setTimeout(() => toast.classList.add('hidden'), 2500);
@@ -839,13 +1013,12 @@ class App {
     });
   }
 
-  // ── Resize ────────────────────────────────────────────────
   _bindResize() {
-    const ro = new ResizeObserver(() => this._viewer?.resize());
-    const container = document.getElementById('viewer-container');
-    if (container) ro.observe(container);
+    const ro  = new ResizeObserver(() => this._viewer?.resize());
+    const cnt = document.getElementById('viewer-container');
+    if (cnt) ro.observe(cnt);
   }
 }
 
-// ── Bootstrap ──────────────────────────────────────────────
+// ── Bootstrap ─────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => new App());
