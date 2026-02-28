@@ -1,7 +1,8 @@
 -- ============================================================
 --  CAISSON DE BASSE — Base de données MySQL
 --  Paramètres de Thiele-Small pour subwoofers car audio
---  Valeurs de référence — vérifier les datasheets officiels
+--  Sources : loudspeakerdatabase.com, datasheets officiels
+--  fabricants (MTX, Focal, GAS, Ground Zero)
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS caisson_db
@@ -50,62 +51,73 @@ CREATE TABLE IF NOT EXISTS subwoofers (
 
 
 -- ============================================================
---  DONNÉES
+--  DONNÉES — Paramètres T/S vérifiés
 -- ============================================================
 
 INSERT INTO brands (name, country, website) VALUES
-  ('MTX Audio',   'États-Unis', 'https://www.mtx.com'),
+  ('MTX Audio',   'États-Unis', 'https://www.mtxaudio.fr'),
   ('Focal',       'France',     'https://www.focal.com'),
-  ('GAS',         'Suède',      'https://www.gasaudio.com'),
-  ('GroundZero',  'Allemagne',  'https://www.ground-zero-audio.com'),
-  ('JBL',         'États-Unis', 'https://www.jbl.com');
+  ('GAS',         'Suède',      'https://www.gasaudiopower.com'),
+  ('GroundZero',  'Allemagne',  'https://www.ground-zero-audio.com');
 
 
 -- ── MTX Audio (brand_id = 1) ─────────────────────────────────
+-- Sources : loudspeakerdatabase.com/MTX, mtxaudio.eu datasheets
 INSERT INTO subwoofers
-  (brand_id, model,            size_inch, diameter_mm, fs,    qts,   qes,   qms,  vas,   xmax, re,   voice_coil, power_rms, power_peak, recommended_type) VALUES
-  (1, 'MTX RT8D 8"',           8.0,  200, 48.00, 0.5200, 0.6800, 3.20,  9.00, 7.5,  3.60, '2×4Ω',  150,  450, 'sealed'),
-  (1, 'MTX RT10D 10"',         10.0, 250, 42.00, 0.4500, 0.5700, 3.30, 16.00, 9.5,  3.50, '2×4Ω',  200,  600, 'both'),
-  (1, 'MTX 55DOIT 12"',        12.0, 305, 36.00, 0.3800, 0.4700, 3.00, 38.00,13.0,  3.50, '2×4Ω',  500, 1500, 'both'),
-  (1, 'MTX 9512D2 12"',        12.0, 305, 27.00, 0.2800, 0.3500, 2.30, 82.00,22.0,  1.70, '2×2Ω', 1200, 3600, 'ported'),
-  (1, 'MTX 9500D2 15"',        15.0, 380, 22.00, 0.2500, 0.3100, 2.10,140.00,27.0,  1.50, '2×2Ω', 1500, 4500, 'ported');
+  (brand_id, model,         size_inch, diameter_mm, fs,    qts,   qes,   qms,   vas,   xmax, re,   voice_coil, power_rms, power_peak, recommended_type) VALUES
+  -- RT12-04 : entrée de gamme 12", bobine 4Ω
+  (1, 'MTX RT12-04',        12.0, 305, 28.00, 0.5400, 0.5800, 6.870,  68.00, 16.0, 3.20, '4Ω',    250,   750, 'both'),
+  -- TX8 Series : competition 1800-2000W, bobine 2Ω
+  (1, 'MTX TX812',          12.0, 305, 35.00, 0.4200, 0.4600, 5.120,  24.60, 12.5, 2.00, '2Ω',   1800,  5400, 'both'),
+  (1, 'MTX TX815',          15.0, 380, 31.00, 0.4900, 0.5300, 6.300,  69.30, 12.5, 2.00, '2Ω',   2000,  6000, 'both'),
+  -- RFL Series : ultra-competition 3000-3500W, faible Qts → évent obligatoire
+  (1, 'MTX RFL12',          12.0, 305, 35.00, 0.3500, 0.3700, 7.610,  14.60, 15.0, 2.00, '2Ω',   3000,  9000, 'ported'),
+  (1, 'MTX RFL15',          15.0, 380, 35.00, 0.3800, 0.4000, 7.030,  44.00, 15.0, 2.00, '2Ω',   3500, 10500, 'ported');
 
 
 -- ── Focal (brand_id = 2) ─────────────────────────────────────
+-- Sources : focal-audio.jp datasheets PDF, focal-america.com, loudspeakerdatabase.com/Focal
 INSERT INTO subwoofers
-  (brand_id, model,            size_inch, diameter_mm, fs,    qts,   qes,   qms,  vas,   xmax, re,   voice_coil, power_rms, power_peak, recommended_type) VALUES
-  (2, 'Focal Sub P20F 8"',     8.0,  210, 52.00, 0.5200, 0.6800, 3.50,  9.00, 6.5,  3.50, '4Ω',    150,  450, 'sealed'),
-  (2, 'Focal Sub P25F 10"',   10.0,  250, 44.00, 0.4800, 0.6200, 3.50, 15.00, 8.0,  3.50, '4Ω',    200,  600, 'sealed'),
-  (2, 'Focal Sub P30F 12"',   12.0,  300, 36.00, 0.4000, 0.5000, 3.00, 32.00,12.0,  3.30, '4Ω',    300,  900, 'both'),
-  (2, 'Focal Sub P33F 13"',   13.0,  330, 30.00, 0.3600, 0.4500, 2.80, 52.00,16.0,  3.00, '4Ω',    400, 1200, 'both'),
-  (2, 'Focal Utopia Be W33',  13.0,  330, 22.00, 0.2800, 0.3400, 2.30, 80.00,24.0,  2.40, '4Ω',    500, 1500, 'ported');
+  (brand_id, model,         size_inch, diameter_mm, fs,    qts,   qes,   qms,   vas,   xmax, re,   voice_coil, power_rms, power_peak, recommended_type) VALUES
+  -- Sub P25 FE (Flax Expert) 10" 4Ω — Fs=31Hz, Qts=0.45
+  (2, 'Focal Sub P25 FE',   10.0, 250, 31.00, 0.4500, 0.5100, 4.500,  29.00, 14.0, 3.70, '4Ω',    300,   600, 'both'),
+  -- Sub P25 FSE (Flax EVO, compact) 10" 4Ω — Qts=0.78 → caisson clos
+  (2, 'Focal Sub P25 FSE',  10.0, 250, 30.00, 0.7800, 0.9500, 5.000,  25.00, 11.0, 3.20, '4Ω',    280,   560, 'sealed'),
+  -- Sub P25 DB (Double Bobine) 10" 2×1Ω — très faible Fs, idéal évent
+  (2, 'Focal Sub P25 DB',   10.0, 250, 27.46, 0.4310, 0.4700, 5.210,  40.72,  8.5, 1.70, '2×1Ω', 300,   600, 'both'),
+  -- Sub P30F (Expert Flax) 12" 4Ω — Fs=28Hz, large Vas=70L
+  (2, 'Focal Sub P30F',     12.0, 300, 28.00, 0.4700, 0.5100, 5.600,  70.00, 14.0, 3.70, '4Ω',    400,   800, 'both'),
+  -- Sub P30 FSE (Flax EVO, encastrable) 12" 4Ω — très haut Qts → clos/encastré
+  (2, 'Focal Sub P30 FSE',  12.0, 300, 30.00, 1.1000, 1.3000, 7.200,  42.00, 11.0, 3.20, '4Ω',    300,   600, 'sealed');
 
 
--- ── GAS (brand_id = 3) ──────────────────────────────────────
+-- ── GAS Audio Power (brand_id = 3) ──────────────────────────
+-- Sources : gasaudiopower.com datasheets, bassbrothers.no PDF officiel, loudspeakerdatabase.com
 INSERT INTO subwoofers
-  (brand_id, model,            size_inch, diameter_mm, fs,    qts,   qes,   qms,  vas,   xmax, re,   voice_coil, power_rms, power_peak, recommended_type) VALUES
-  (3, 'GAS SQ8D4 8"',          8.0,  200, 48.00, 0.4800, 0.6200, 3.30, 10.00,10.0,  3.50, '2×4Ω',  300,  900, 'sealed'),
-  (3, 'GAS SQ10D4 10"',       10.0,  250, 40.00, 0.4200, 0.5300, 3.20, 20.00,13.0,  3.40, '2×4Ω',  450, 1350, 'both'),
-  (3, 'GAS SQ12D4 12"',       12.0,  305, 33.00, 0.3600, 0.4500, 3.00, 40.00,16.0,  3.30, '2×4Ω',  600, 1800, 'both'),
-  (3, 'GAS Octane 10D4',      10.0,  250, 36.00, 0.3400, 0.4300, 2.80, 28.00,16.0,  3.30, '2×4Ω',  700, 2100, 'ported'),
-  (3, 'GAS Octane 12D4',      12.0,  305, 26.00, 0.2800, 0.3500, 2.50, 60.00,22.0,  3.00, '2×4Ω', 1000, 3000, 'ported');
+  (brand_id, model,         size_inch, diameter_mm, fs,    qts,   qes,   qms,   vas,   xmax, re,   voice_coil, power_rms, power_peak, recommended_type) VALUES
+  -- MAX S1-8D1 : 8" 550W RMS, 2×1Ω — Xmax=12mm
+  (3, 'GAS MAX S1-8D1',      8.0, 200, 33.10, 0.4200, 0.4700, 3.780,   8.80, 12.0, 1.80, '2×1Ω', 550,  1100, 'both'),
+  -- MAX S1-10D1 : 10" 1500W RMS, 2×1Ω — Xmax=20mm
+  (3, 'GAS MAX S1-10D1',    10.0, 250, 33.30, 0.4700, 0.5100, 5.520,  11.70, 20.0, 1.80, '2×1Ω',1500,  3000, 'both'),
+  -- MAX S1-10D2 : 10" 1500W RMS, 2×2Ω — Xmax=20mm
+  (3, 'GAS MAX S1-10D2',    10.0, 250, 31.00, 0.4900, 0.5300, 5.710,  14.90, 20.0, 3.80, '2×2Ω',1500,  3000, 'both'),
+  -- MAX S1-12D1 : 12" 1600W RMS, 2×1Ω — Xmax=40mm exceptionnel
+  (3, 'GAS MAX S1-12D1',    12.0, 305, 27.40, 0.4800, 0.5300, 5.810,  33.40, 40.0, 1.80, '2×1Ω',1600,  3200, 'both'),
+  -- MAX S2-15D1 : 15" 2500W RMS, 2×1Ω — Vas=59.5L
+  (3, 'GAS MAX S2-15D1',    15.0, 380, 31.00, 0.4500, 0.4900, 5.440,  59.50, 25.0, 2.20, '2×1Ω',2500,  5000, 'both');
 
 
--- ── GroundZero (brand_id = 4) ────────────────────────────────
+-- ── Ground Zero (brand_id = 4) ────────────────────────────────
+-- Sources : loudspeakerdatabase.com/GroundZero, ground-zero-audio.com datasheets PDF
 INSERT INTO subwoofers
-  (brand_id, model,            size_inch, diameter_mm, fs,    qts,   qes,   qms,  vas,   xmax, re,   voice_coil, power_rms, power_peak, recommended_type) VALUES
-  (4, 'GZPW 8D4 8"',           8.0,  200, 50.00, 0.5200, 0.6800, 3.60, 12.00, 9.0,  3.50, '2×4Ω',  250,  750, 'sealed'),
-  (4, 'GZPW 10D4 10"',        10.0,  250, 38.00, 0.4200, 0.5300, 3.20, 22.00,12.0,  3.40, '2×4Ω',  400, 1200, 'both'),
-  (4, 'GZPW 12D4 12"',        12.0,  305, 30.00, 0.3500, 0.4300, 3.00, 50.00,17.0,  3.40, '2×4Ω',  650, 1950, 'both'),
-  (4, 'GZPW 15D2 15"',        15.0,  380, 24.00, 0.2800, 0.3500, 2.60,100.00,22.0,  1.80, '2×2Ω',  900, 2700, 'ported'),
-  (4, 'GZPW 3000SPL 12"',     12.0,  305, 35.00, 0.3000, 0.3700, 2.50, 45.00,28.0,  2.50, '2×2Ω', 1500, 4500, 'ported');
-
-
--- ── JBL (brand_id = 5) ──────────────────────────────────────
-INSERT INTO subwoofers
-  (brand_id, model,            size_inch, diameter_mm, fs,    qts,   qes,   qms,  vas,   xmax, re,   voice_coil, power_rms, power_peak, recommended_type) VALUES
-  (5, 'JBL Club WS1000 10"',  10.0,  250, 37.00, 0.4000, 0.5000, 3.00, 30.00,12.0,  3.50, '4Ω',    400, 1200, 'both'),
-  (5, 'JBL CS-WQ12 12"',      12.0,  305, 38.00, 0.4100, 0.5200, 2.90, 30.00,11.0,  3.50, '4Ω',    450, 1350, 'both'),
-  (5, 'JBL GT-BassPro 12"',   12.0,  305, 33.00, 0.3700, 0.4600, 2.80, 48.00,14.0,  3.30, '4Ω',    500, 1500, 'both'),
-  (5, 'JBL Stage 1210 12"',   12.0,  305, 35.00, 0.3800, 0.4700, 3.00, 35.00,12.0,  3.50, '4Ω',    400, 1200, 'both'),
-  (5, 'JBL W15GTI MkII 15"',  15.0,  380, 19.00, 0.2400, 0.3000, 2.00,165.00,32.0,  2.00, '2×2Ω', 2000, 6000, 'ported');
+  (brand_id, model,         size_inch, diameter_mm, fs,    qts,   qes,   qms,   vas,   xmax, re,   voice_coil, power_rms, power_peak, recommended_type) VALUES
+  -- GZUW 8CF : 8" Uranium Carbon Fiber — Fs élevé, idéal caisson clos compact
+  (4, 'GZUW 8CF',            8.0, 215, 57.00, 0.7000, 0.7400,11.920,   4.80, 10.0, 4.10, '2×2Ω', 300,   600, 'sealed'),
+  -- GZNW 12Xmax : 12" Nuclear SPL 3000W, 2×1Ω
+  (4, 'GZNW 12Xmax',        12.0, 305, 35.60, 0.6100, 0.6700, 6.820,  13.60, 17.5, 1.80, '2×1Ω',3000,  6000, 'both'),
+  -- GZNW 12X-D2 : 12" Nuclear ultra-basse fréquence (Fs=21.8Hz !), 2×2Ω
+  (4, 'GZNW 12X-D2',        12.0, 305, 21.80, 0.3300, 0.3200, 7.760,  35.00, 31.0, 4.20, '2×2Ω',2000,  3500, 'ported'),
+  -- GZNW 15Xmax : 15" Nuclear 4000W, faible Qts → évent
+  (4, 'GZNW 15Xmax',        15.0, 380, 29.50, 0.3300, 0.3500, 5.130,  35.70, 12.5, 2.00, '2×1Ω',4000,  8000, 'ported'),
+  -- GZPW 15Xmax : 15" Plutonium 6000W compétition, Xmax=23mm, évent
+  (4, 'GZPW 15Xmax',        15.0, 380, 31.60, 0.4000, 0.4470, 6.020,  24.00, 23.0, 2.00, '2×1Ω',6000, 12000, 'ported');

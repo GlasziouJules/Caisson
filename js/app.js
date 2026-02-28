@@ -9,40 +9,57 @@ const STATIC_BRANDS = [
   { id: 2, name: 'Focal',      country: 'France'     },
   { id: 3, name: 'GAS',        country: 'Suède'      },
   { id: 4, name: 'GroundZero', country: 'Allemagne'  },
-  { id: 5, name: 'JBL',        country: 'États-Unis' },
 ];
 
+// Paramètres T/S vérifiés — sources : loudspeakerdatabase.com, datasheets fabricants
 const STATIC_SUBS = [
-  // MTX Audio
-  { id:1,  brand_id:1, model:'MTX RT8D 8"',          size_inch:8.0,  diameter_mm:200, fs:48.00, qts:0.5200, qes:0.6800, qms:3.20, vas:9.00,   xmax:7.5,  re:3.60, voice_coil:'2×4Ω', power_rms:150,  recommended_type:'sealed' },
-  { id:2,  brand_id:1, model:'MTX RT10D 10"',         size_inch:10.0, diameter_mm:250, fs:42.00, qts:0.4500, qes:0.5700, qms:3.30, vas:16.00,  xmax:9.5,  re:3.50, voice_coil:'2×4Ω', power_rms:200,  recommended_type:'both'   },
-  { id:3,  brand_id:1, model:'MTX 55DOIT 12"',        size_inch:12.0, diameter_mm:305, fs:36.00, qts:0.3800, qes:0.4700, qms:3.00, vas:38.00,  xmax:13.0, re:3.50, voice_coil:'2×4Ω', power_rms:500,  recommended_type:'both'   },
-  { id:4,  brand_id:1, model:'MTX 9512D2 12"',        size_inch:12.0, diameter_mm:305, fs:27.00, qts:0.2800, qes:0.3500, qms:2.30, vas:82.00,  xmax:22.0, re:1.70, voice_coil:'2×2Ω', power_rms:1200, recommended_type:'ported'  },
-  { id:5,  brand_id:1, model:'MTX 9500D2 15"',        size_inch:15.0, diameter_mm:380, fs:22.00, qts:0.2500, qes:0.3100, qms:2.10, vas:140.00, xmax:27.0, re:1.50, voice_coil:'2×2Ω', power_rms:1500, recommended_type:'ported'  },
-  // Focal
-  { id:6,  brand_id:2, model:'Focal Sub P20F 8"',     size_inch:8.0,  diameter_mm:210, fs:52.00, qts:0.5200, qes:0.6800, qms:3.50, vas:9.00,   xmax:6.5,  re:3.50, voice_coil:'4Ω',   power_rms:150,  recommended_type:'sealed' },
-  { id:7,  brand_id:2, model:'Focal Sub P25F 10"',    size_inch:10.0, diameter_mm:250, fs:44.00, qts:0.4800, qes:0.6200, qms:3.50, vas:15.00,  xmax:8.0,  re:3.50, voice_coil:'4Ω',   power_rms:200,  recommended_type:'sealed' },
-  { id:8,  brand_id:2, model:'Focal Sub P30F 12"',    size_inch:12.0, diameter_mm:300, fs:36.00, qts:0.4000, qes:0.5000, qms:3.00, vas:32.00,  xmax:12.0, re:3.30, voice_coil:'4Ω',   power_rms:300,  recommended_type:'both'   },
-  { id:9,  brand_id:2, model:'Focal Sub P33F 13"',    size_inch:13.0, diameter_mm:330, fs:30.00, qts:0.3600, qes:0.4500, qms:2.80, vas:52.00,  xmax:16.0, re:3.00, voice_coil:'4Ω',   power_rms:400,  recommended_type:'both'   },
-  { id:10, brand_id:2, model:'Focal Utopia Be W33',   size_inch:13.0, diameter_mm:330, fs:22.00, qts:0.2800, qes:0.3400, qms:2.30, vas:80.00,  xmax:24.0, re:2.40, voice_coil:'4Ω',   power_rms:500,  recommended_type:'ported'  },
-  // GAS
-  { id:11, brand_id:3, model:'GAS SQ8D4 8"',          size_inch:8.0,  diameter_mm:200, fs:48.00, qts:0.4800, qes:0.6200, qms:3.30, vas:10.00,  xmax:10.0, re:3.50, voice_coil:'2×4Ω', power_rms:300,  recommended_type:'sealed' },
-  { id:12, brand_id:3, model:'GAS SQ10D4 10"',        size_inch:10.0, diameter_mm:250, fs:40.00, qts:0.4200, qes:0.5300, qms:3.20, vas:20.00,  xmax:13.0, re:3.40, voice_coil:'2×4Ω', power_rms:450,  recommended_type:'both'   },
-  { id:13, brand_id:3, model:'GAS SQ12D4 12"',        size_inch:12.0, diameter_mm:305, fs:33.00, qts:0.3600, qes:0.4500, qms:3.00, vas:40.00,  xmax:16.0, re:3.30, voice_coil:'2×4Ω', power_rms:600,  recommended_type:'both'   },
-  { id:14, brand_id:3, model:'GAS Octane 10D4',       size_inch:10.0, diameter_mm:250, fs:36.00, qts:0.3400, qes:0.4300, qms:2.80, vas:28.00,  xmax:16.0, re:3.30, voice_coil:'2×4Ω', power_rms:700,  recommended_type:'ported'  },
-  { id:15, brand_id:3, model:'GAS Octane 12D4',       size_inch:12.0, diameter_mm:305, fs:26.00, qts:0.2800, qes:0.3500, qms:2.50, vas:60.00,  xmax:22.0, re:3.00, voice_coil:'2×4Ω', power_rms:1000, recommended_type:'ported'  },
-  // GroundZero
-  { id:16, brand_id:4, model:'GZPW 8D4 8"',           size_inch:8.0,  diameter_mm:200, fs:50.00, qts:0.5200, qes:0.6800, qms:3.60, vas:12.00,  xmax:9.0,  re:3.50, voice_coil:'2×4Ω', power_rms:250,  recommended_type:'sealed' },
-  { id:17, brand_id:4, model:'GZPW 10D4 10"',         size_inch:10.0, diameter_mm:250, fs:38.00, qts:0.4200, qes:0.5300, qms:3.20, vas:22.00,  xmax:12.0, re:3.40, voice_coil:'2×4Ω', power_rms:400,  recommended_type:'both'   },
-  { id:18, brand_id:4, model:'GZPW 12D4 12"',         size_inch:12.0, diameter_mm:305, fs:30.00, qts:0.3500, qes:0.4300, qms:3.00, vas:50.00,  xmax:17.0, re:3.40, voice_coil:'2×4Ω', power_rms:650,  recommended_type:'both'   },
-  { id:19, brand_id:4, model:'GZPW 15D2 15"',         size_inch:15.0, diameter_mm:380, fs:24.00, qts:0.2800, qes:0.3500, qms:2.60, vas:100.00, xmax:22.0, re:1.80, voice_coil:'2×2Ω', power_rms:900,  recommended_type:'ported'  },
-  { id:20, brand_id:4, model:'GZPW 3000SPL 12"',      size_inch:12.0, diameter_mm:305, fs:35.00, qts:0.3000, qes:0.3700, qms:2.50, vas:45.00,  xmax:28.0, re:2.50, voice_coil:'2×2Ω', power_rms:1500, recommended_type:'ported'  },
-  // JBL
-  { id:21, brand_id:5, model:'JBL Club WS1000 10"',   size_inch:10.0, diameter_mm:250, fs:37.00, qts:0.4000, qes:0.5000, qms:3.00, vas:30.00,  xmax:12.0, re:3.50, voice_coil:'4Ω',   power_rms:400,  recommended_type:'both'   },
-  { id:22, brand_id:5, model:'JBL CS-WQ12 12"',       size_inch:12.0, diameter_mm:305, fs:38.00, qts:0.4100, qes:0.5200, qms:2.90, vas:30.00,  xmax:11.0, re:3.50, voice_coil:'4Ω',   power_rms:450,  recommended_type:'both'   },
-  { id:23, brand_id:5, model:'JBL GT-BassPro 12"',    size_inch:12.0, diameter_mm:305, fs:33.00, qts:0.3700, qes:0.4600, qms:2.80, vas:48.00,  xmax:14.0, re:3.30, voice_coil:'4Ω',   power_rms:500,  recommended_type:'both'   },
-  { id:24, brand_id:5, model:'JBL Stage 1210 12"',    size_inch:12.0, diameter_mm:305, fs:35.00, qts:0.3800, qes:0.4700, qms:3.00, vas:35.00,  xmax:12.0, re:3.50, voice_coil:'4Ω',   power_rms:400,  recommended_type:'both'   },
-  { id:25, brand_id:5, model:'JBL W15GTI MkII 15"',   size_inch:15.0, diameter_mm:380, fs:19.00, qts:0.2400, qes:0.3000, qms:2.00, vas:165.00, xmax:32.0, re:2.00, voice_coil:'2×2Ω', power_rms:2000, recommended_type:'ported'  },
+  // ── MTX Audio ──────────────────────────────────────────────────────────────
+  // RT12-04 : 12" 4Ω entrée de gamme — source : loudspeakerdatabase.com/MTX/RT12-04
+  { id:1,  brand_id:1, model:'MTX RT12-04',        size_inch:12.0, diameter_mm:305, fs:28.00, qts:0.5400, qes:0.5800, qms:6.870, vas:68.00,  xmax:16.0, re:3.20, voice_coil:'4Ω',    power_rms: 250, recommended_type:'both'   },
+  // TX812 : 12" 2Ω compétition — source : loudspeakerdatabase.com/MTX/TX812
+  { id:2,  brand_id:1, model:'MTX TX812',          size_inch:12.0, diameter_mm:305, fs:35.00, qts:0.4200, qes:0.4600, qms:5.120, vas:24.60,  xmax:12.5, re:2.00, voice_coil:'2Ω',    power_rms:1800, recommended_type:'both'   },
+  // TX815 : 15" 2Ω compétition — source : loudspeakerdatabase.com/MTX/TX815
+  { id:3,  brand_id:1, model:'MTX TX815',          size_inch:15.0, diameter_mm:380, fs:31.00, qts:0.4900, qes:0.5300, qms:6.300, vas:69.30,  xmax:12.5, re:2.00, voice_coil:'2Ω',    power_rms:2000, recommended_type:'both'   },
+  // RFL12 : 12" 2Ω ultra-compétition, Qts faible → évent — source : loudspeakerdatabase.com/MTX/RFL12
+  { id:4,  brand_id:1, model:'MTX RFL12',          size_inch:12.0, diameter_mm:305, fs:35.00, qts:0.3500, qes:0.3700, qms:7.610, vas:14.60,  xmax:15.0, re:2.00, voice_coil:'2Ω',    power_rms:3000, recommended_type:'ported' },
+  // RFL15 : 15" 2Ω ultra-compétition, Qts faible → évent — source : loudspeakerdatabase.com/MTX/RFL15
+  { id:5,  brand_id:1, model:'MTX RFL15',          size_inch:15.0, diameter_mm:380, fs:35.00, qts:0.3800, qes:0.4000, qms:7.030, vas:44.00,  xmax:15.0, re:2.00, voice_coil:'2Ω',    power_rms:3500, recommended_type:'ported' },
+
+  // ── Focal ──────────────────────────────────────────────────────────────────
+  // Sub P25 FE (Flax Expert) 10" 4Ω — source : focal-audio.jp datasheet PDF
+  { id:6,  brand_id:2, model:'Focal Sub P25 FE',   size_inch:10.0, diameter_mm:250, fs:31.00, qts:0.4500, qes:0.5100, qms:4.500, vas:29.00,  xmax:14.0, re:3.70, voice_coil:'4Ω',    power_rms: 300, recommended_type:'both'   },
+  // Sub P25 FSE (Flax EVO Shallow) 10" 4Ω — source : focal-audio.jp datasheet PDF
+  { id:7,  brand_id:2, model:'Focal Sub P25 FSE',  size_inch:10.0, diameter_mm:250, fs:30.00, qts:0.7800, qes:0.9500, qms:5.000, vas:25.00,  xmax:11.0, re:3.20, voice_coil:'4Ω',    power_rms: 280, recommended_type:'sealed' },
+  // Sub P25 DB (Double Bobine) 10" 2×1Ω — source : loudspeakerdatabase.com/Focal
+  { id:8,  brand_id:2, model:'Focal Sub P25 DB',   size_inch:10.0, diameter_mm:250, fs:27.46, qts:0.4310, qes:0.4700, qms:5.210, vas:40.72,  xmax: 8.5, re:1.70, voice_coil:'2×1Ω',  power_rms: 300, recommended_type:'both'   },
+  // Sub P30F (Expert Flax) 12" 4Ω — source : focal-america.com datasheet PDF
+  { id:9,  brand_id:2, model:'Focal Sub P30F',     size_inch:12.0, diameter_mm:300, fs:28.00, qts:0.4700, qes:0.5100, qms:5.600, vas:70.00,  xmax:14.0, re:3.70, voice_coil:'4Ω',    power_rms: 400, recommended_type:'both'   },
+  // Sub P30 FSE (Flax EVO Shallow) 12" 4Ω — source : loudspeakerdatabase.com/Focal/SUB_P30FSE
+  { id:10, brand_id:2, model:'Focal Sub P30 FSE',  size_inch:12.0, diameter_mm:300, fs:30.00, qts:1.1000, qes:1.3000, qms:7.200, vas:42.00,  xmax:11.0, re:3.20, voice_coil:'4Ω',    power_rms: 300, recommended_type:'sealed' },
+
+  // ── GAS Audio Power ────────────────────────────────────────────────────────
+  // MAX S1-8D1 8" 2×1Ω — source : gasaudiopower.com datasheet officiel
+  { id:11, brand_id:3, model:'GAS MAX S1-8D1',     size_inch: 8.0, diameter_mm:200, fs:33.10, qts:0.4200, qes:0.4700, qms:3.780, vas: 8.80,  xmax:12.0, re:1.80, voice_coil:'2×1Ω',  power_rms: 550, recommended_type:'both'   },
+  // MAX S1-10D1 10" 2×1Ω — source : gasaudiopower.com datasheet officiel
+  { id:12, brand_id:3, model:'GAS MAX S1-10D1',    size_inch:10.0, diameter_mm:250, fs:33.30, qts:0.4700, qes:0.5100, qms:5.520, vas:11.70,  xmax:20.0, re:1.80, voice_coil:'2×1Ω',  power_rms:1500, recommended_type:'both'   },
+  // MAX S1-10D2 10" 2×2Ω — source : gasaudiopower.com datasheet officiel
+  { id:13, brand_id:3, model:'GAS MAX S1-10D2',    size_inch:10.0, diameter_mm:250, fs:31.00, qts:0.4900, qes:0.5300, qms:5.710, vas:14.90,  xmax:20.0, re:3.80, voice_coil:'2×2Ω',  power_rms:1500, recommended_type:'both'   },
+  // MAX S1-12D1 12" 2×1Ω — source : bassbrothers.no (datasheet PDF GAS officiel)
+  { id:14, brand_id:3, model:'GAS MAX S1-12D1',    size_inch:12.0, diameter_mm:305, fs:27.40, qts:0.4800, qes:0.5300, qms:5.810, vas:33.40,  xmax:40.0, re:1.80, voice_coil:'2×1Ω',  power_rms:1600, recommended_type:'both'   },
+  // MAX S2-15D1 15" 2×1Ω — source : loudspeakerdatabase.com/GAS/MAX_S2-15D1
+  { id:15, brand_id:3, model:'GAS MAX S2-15D1',    size_inch:15.0, diameter_mm:380, fs:31.00, qts:0.4500, qes:0.4900, qms:5.440, vas:59.50,  xmax:25.0, re:2.20, voice_coil:'2×1Ω',  power_rms:2500, recommended_type:'both'   },
+
+  // ── Ground Zero ────────────────────────────────────────────────────────────
+  // GZUW 8CF 8" 2×2Ω Uranium Carbon Fiber — source : loudspeakerdatabase.com/GroundZero/GZUW_8CF
+  { id:16, brand_id:4, model:'GZUW 8CF',           size_inch: 8.0, diameter_mm:215, fs:57.00, qts:0.7000, qes:0.7400, qms:11.92, vas: 4.80,  xmax:10.0, re:4.10, voice_coil:'2×2Ω',  power_rms: 300, recommended_type:'sealed' },
+  // GZNW 12Xmax 12" 2×1Ω Nuclear SPL — source : loudspeakerdatabase.com/GroundZero/GZNW_12Xmax
+  { id:17, brand_id:4, model:'GZNW 12Xmax',        size_inch:12.0, diameter_mm:305, fs:35.60, qts:0.6100, qes:0.6700, qms:6.820, vas:13.60,  xmax:17.5, re:1.80, voice_coil:'2×1Ω',  power_rms:3000, recommended_type:'both'   },
+  // GZNW 12X-D2 12" 2×2Ω Nuclear ultra-grave (Fs=21.8Hz) — source : loudspeakerdatabase.com/GroundZero/GZNW_12X-D2
+  { id:18, brand_id:4, model:'GZNW 12X-D2',        size_inch:12.0, diameter_mm:305, fs:21.80, qts:0.3300, qes:0.3200, qms:7.760, vas:35.00,  xmax:31.0, re:4.20, voice_coil:'2×2Ω',  power_rms:2000, recommended_type:'ported' },
+  // GZNW 15Xmax 15" 2×1Ω Nuclear — source : loudspeakerdatabase.com/GroundZero/GZNW_15Xmax
+  { id:19, brand_id:4, model:'GZNW 15Xmax',        size_inch:15.0, diameter_mm:380, fs:29.50, qts:0.3300, qes:0.3500, qms:5.130, vas:35.70,  xmax:12.5, re:2.00, voice_coil:'2×1Ω',  power_rms:4000, recommended_type:'ported' },
+  // GZPW 15Xmax 15" 2×1Ω Plutonium compétition — source : speakerboxlite.com/GroundZero
+  { id:20, brand_id:4, model:'GZPW 15Xmax',        size_inch:15.0, diameter_mm:380, fs:31.60, qts:0.4000, qes:0.4470, qms:6.020, vas:24.00,  xmax:23.0, re:2.00, voice_coil:'2×1Ω',  power_rms:6000, recommended_type:'ported' },
 ];
 
 const API_BASE = 'http://localhost:3001/api';
