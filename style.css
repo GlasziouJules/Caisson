@@ -2,11 +2,11 @@
    VARIABLES & RESET
    ========================================== */
 :root {
-  --bg:        #051a08;
-  --surface:   #0a2e10;
-  --card:      #063310;
-  --card-alt:  #0a3d14;
-  --border:    #1a6b2a;
+  --bg:        #0d3818;
+  --surface:   #0f4020;
+  --card:      #0a3010;
+  --card-alt:  #123e1a;
+  --border:    #1e6e2e;
   --accent:    #FFD700;
   --accent2:   #009c3b;
   --success:   #00c853;
@@ -14,7 +14,7 @@
   --danger:    #ef4444;
   --text:      #f0faf2;
   --muted:     #9acca5;
-  --input-bg:  #011003;
+  --input-bg:  #071e0c;
   --radius:    12px;
   --radius-sm: 6px;
   --shadow:    0 4px 24px rgba(0,0,0,0.5);
@@ -29,7 +29,7 @@ body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var
    HEADER
    ========================================== */
 header {
-  background: linear-gradient(135deg,#041405 0%,#072010 50%,#031205 100%);
+  background: linear-gradient(135deg,#082c12 0%,#0d3818 50%,#082c12 100%);
   border-bottom: 1px solid var(--border);
   padding: 1.4rem 2rem;
   position: sticky; top: 0; z-index: 100;
@@ -319,8 +319,7 @@ footer { text-align:center; padding:2rem; color:var(--muted); font-size:.75rem; 
    ========================================== */
 .tropical-deco { position: fixed; pointer-events: none; z-index: 0; }
 
-/* Fougères bas + palmes haut + feuilles bords */
-.deco-tl  { top:    -8px;  left:  -8px;  transform-origin: top left;      animation: swayTL 8s  ease-in-out infinite; }
+/* Fougères bas + palmes haut-droite + feuilles bords */
 .deco-bl  { bottom: -20px; left:  -12px; transform-origin: bottom left;   animation: swayBL 7s  ease-in-out infinite; }
 .deco-br  { bottom: -20px; right: -12px; transform-origin: bottom right;  animation: swayBR 8s  ease-in-out infinite; }
 .deco-tr  { top:    -8px;  right:  -8px; transform-origin: top right;     animation: swayTR 9s  ease-in-out infinite; }
@@ -331,6 +330,8 @@ footer { text-align:center; padding:2rem; color:var(--muted); font-size:.75rem; 
 .deco-fl1 { top:  8vh; right: 160px; animation: floatBob 4s   ease-in-out infinite; }
 .deco-fl2 { top: 42vh; left:   15px; animation: floatBob 5s   ease-in-out infinite .5s; }
 .deco-fl3 { top: 65vh; right:  15px; animation: floatBob 4.5s ease-in-out infinite 1s; }
+.deco-fl4 { top: 20vh; left:   90px; animation: floatBob 5.5s ease-in-out infinite .8s; }
+.deco-fl5 { top: 78vh; left:  160px; animation: floatBob 4.2s ease-in-out infinite 1.5s; }
 
 /* Caissons de basse décoratifs */
 .deco-cab1 { top:    14vh; right:  12px; opacity: 0.38; animation: floatBob 6s   ease-in-out infinite .3s; }
@@ -342,7 +343,6 @@ footer { text-align:center; padding:2rem; color:var(--muted); font-size:.75rem; 
 
 main, header, footer { position: relative; z-index: 1; }
 
-@keyframes swayTL { 0%,100%{transform:rotate(0deg)}  50%{transform:rotate(3deg)} }
 @keyframes swayBL { 0%,100%{transform:rotate(0deg)}  50%{transform:rotate(4deg)} }
 @keyframes swayBR { 0%,100%{transform:rotate(0deg)}  50%{transform:rotate(-4deg)} }
 @keyframes swayTR { 0%,100%{transform:rotate(0deg)}  50%{transform:rotate(-3deg)} }
