@@ -16,88 +16,100 @@
 </head>
 <body>
 
-  <!-- DÉCORATIONS TROPICALES BRÉSILIENNES -->
+  <!-- DÉCORATIONS TROPICALES — chaque SVG dessiné pour son coin, sans miroir CSS -->
 
-  <!-- Feuilles de palmier — coin haut-gauche -->
-  <div class="tropical-deco deco-tl">
-    <svg width="260" height="230" viewBox="0 0 260 230" xmlns="http://www.w3.org/2000/svg">
-      <!-- Feuille 1 : va vers la droite -->
-      <path d="M-5,45 C30,28 80,18 150,32 C190,40 225,60 255,88
-               C220,62 182,44 145,38 C80,26 28,38 -5,60 Z" fill="#2d8a3a"/>
-      <path d="M-5,52 C35,36 88,28 155,42 C196,52 228,70 255,92"
-            stroke="#1e5c25" stroke-width="1.5" fill="none"/>
-      <!-- Feuille 2 : va vers le bas -->
-      <path d="M32,-5 C26,30 20,75 24,125 C27,165 35,200 40,228
-               C32,198 25,160 23,118 C20,72 14,30 5,-5 Z" fill="#338844"/>
-      <path d="M18,-5 C16,32 18,78 22,128 C26,168 33,202 38,228"
-            stroke="#1e5c25" stroke-width="1.5" fill="none"/>
-      <!-- Feuille 3 : diagonale -->
-      <path d="M-5,18 C28,18 72,32 118,62 C152,84 185,115 205,148
-               C182,114 148,82 112,60 C68,32 26,22 -5,32 Z" fill="#3d9948"/>
-      <path d="M-5,25 C30,26 75,40 122,70 C156,92 188,122 208,154"
-            stroke="#267a30" stroke-width="1.5" fill="none"/>
-      <!-- Feuille sombre pour profondeur -->
-      <path d="M-5,-5 C12,12 30,34 50,65 C65,88 78,118 85,148
-               C72,118 58,88 42,62 C22,34 4,12 -5,5 Z" fill="#1a6b28"/>
-    </svg>
-  </div>
-
-  <!-- Feuilles de palmier — coin haut-droite (symétrie) -->
-  <div class="tropical-deco deco-tr">
-    <svg width="260" height="230" viewBox="0 0 260 230" xmlns="http://www.w3.org/2000/svg">
-      <g transform="scale(-1,1) translate(-260,0)">
-        <path d="M-5,45 C30,28 80,18 150,32 C190,40 225,60 255,88
-                 C220,62 182,44 145,38 C80,26 28,38 -5,60 Z" fill="#2d8a3a"/>
-        <path d="M-5,52 C35,36 88,28 155,42 C196,52 228,70 255,92"
-              stroke="#1e5c25" stroke-width="1.5" fill="none"/>
-        <path d="M32,-5 C26,30 20,75 24,125 C27,165 35,200 40,228
-                 C32,198 25,160 23,118 C20,72 14,30 5,-5 Z" fill="#338844"/>
-        <path d="M18,-5 C16,32 18,78 22,128 C26,168 33,202 38,228"
-              stroke="#1e5c25" stroke-width="1.5" fill="none"/>
-        <path d="M-5,18 C28,18 72,32 118,62 C152,84 185,115 205,148
-                 C182,114 148,82 112,60 C68,32 26,22 -5,32 Z" fill="#3d9948"/>
-        <path d="M-5,25 C30,26 75,40 122,70 C156,92 188,122 208,154"
-              stroke="#267a30" stroke-width="1.5" fill="none"/>
-        <path d="M-5,-5 C12,12 30,34 50,65 C65,88 78,118 85,148
-                 C72,118 58,88 42,62 C22,34 4,12 -5,5 Z" fill="#1a6b28"/>
-      </g>
-    </svg>
-  </div>
-
-  <!-- Feuillage bas — coin bas-gauche -->
+  <!-- Fougères bas-gauche : blades montent vers le haut-droite -->
   <div class="tropical-deco deco-bl">
-    <svg width="240" height="185" viewBox="0 0 240 185" xmlns="http://www.w3.org/2000/svg">
-      <g transform="scale(1,-1) translate(0,-185)">
-        <path d="M-5,45 C30,28 80,18 150,32 C190,40 225,60 255,88
-                 C220,62 182,44 145,38 C80,26 28,38 -5,60 Z" fill="#2d8a3a"/>
-        <path d="M32,-5 C26,30 20,75 24,125 C27,155 35,175 40,185
-                 C32,172 25,148 23,118 C20,72 14,30 5,-5 Z" fill="#338844"/>
-        <path d="M-5,18 C28,18 72,32 118,62 C152,84 185,115 205,148
-                 C182,114 148,82 112,60 C68,32 26,22 -5,32 Z" fill="#3d9948"/>
-        <path d="M70,-5 C64,25 58,60 62,100 C66,130 74,158 80,185
-                 C72,158 65,128 63,96 C60,60 55,28 46,-5 Z" fill="#2a8040"/>
-      </g>
+    <svg width="220" height="320" viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg">
+      <path d="M40,320 C34,256 29,178 37,108 C43,54 55,20 61,0
+               C52,22 41,56 35,110 C27,182 23,260 29,320 Z" fill="#338844"/>
+      <path d="M50,320 C44,254 40,176 47,106 C53,50 64,16 70,-2"
+            stroke="#1e5c24" stroke-width="1.2" fill="none"/>
+      <path d="M84,320 C78,266 75,196 81,130 C87,72 98,38 104,14
+               C96,39 85,74 79,132 C73,200 70,268 76,320 Z" fill="#2d8a3a"/>
+      <path d="M94,320 C88,264 85,194 90,128 C96,70 106,36 112,12"
+            stroke="#1e5c24" stroke-width="1.2" fill="none"/>
+      <path d="M-5,218 C20,204 65,195 115,200 C155,204 192,216 217,232
+               C190,220 152,210 112,205 C64,199 21,208 -5,234 Z" fill="#3d9948"/>
+      <path d="M0,225 C26,212 70,203 118,207 C158,210 194,221 217,235"
+            stroke="#1e5c24" stroke-width="1.2" fill="none"/>
+      <path d="M-5,285 C20,265 55,240 95,218 C128,200 168,186 205,180
+               C168,190 128,206 95,224 C57,247 22,272 -5,300 Z" fill="#2a8040"/>
     </svg>
   </div>
 
-  <!-- Feuillage bas — coin bas-droite (symétrie) -->
+  <!-- Fougères bas-droite : blades montent vers le haut-gauche (chemins miroirs) -->
   <div class="tropical-deco deco-br">
-    <svg width="240" height="185" viewBox="0 0 240 185" xmlns="http://www.w3.org/2000/svg">
-      <g transform="scale(-1,-1) translate(-240,-185)">
-        <path d="M-5,45 C30,28 80,18 150,32 C190,40 225,60 255,88
-                 C220,62 182,44 145,38 C80,26 28,38 -5,60 Z" fill="#2d8a3a"/>
-        <path d="M32,-5 C26,30 20,75 24,125 C27,155 35,175 40,185
-                 C32,172 25,148 23,118 C20,72 14,30 5,-5 Z" fill="#338844"/>
-        <path d="M-5,18 C28,18 72,32 118,62 C152,84 185,115 205,148
-                 C182,114 148,82 112,60 C68,32 26,22 -5,32 Z" fill="#3d9948"/>
-        <path d="M70,-5 C64,25 58,60 62,100 C66,130 74,158 80,185
-                 C72,158 65,128 63,96 C60,60 55,28 46,-5 Z" fill="#2a8040"/>
-      </g>
+    <svg width="220" height="320" viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg">
+      <path d="M180,320 C186,256 191,178 183,108 C177,54 165,20 159,0
+               C168,22 179,56 185,110 C193,182 197,260 191,320 Z" fill="#338844"/>
+      <path d="M170,320 C176,254 180,176 173,106 C167,50 156,16 150,-2"
+            stroke="#1e5c24" stroke-width="1.2" fill="none"/>
+      <path d="M136,320 C142,266 145,196 139,130 C133,72 122,38 116,14
+               C124,39 135,74 141,132 C147,200 150,268 144,320 Z" fill="#2d8a3a"/>
+      <path d="M126,320 C132,264 135,194 130,128 C124,70 114,36 108,12"
+            stroke="#1e5c24" stroke-width="1.2" fill="none"/>
+      <path d="M225,218 C200,204 155,195 105,200 C65,204 28,216 3,232
+               C30,220 68,210 108,205 C156,199 199,208 225,234 Z" fill="#3d9948"/>
+      <path d="M220,225 C194,212 150,203 102,207 C62,210 26,221 3,235"
+            stroke="#1e5c24" stroke-width="1.2" fill="none"/>
+      <path d="M225,285 C200,265 165,240 125,218 C92,200 52,186 15,180
+               C52,190 92,206 125,224 C163,247 198,272 225,300 Z" fill="#2a8040"/>
     </svg>
   </div>
 
-  <!-- Fleur hibiscus jaune — haut-droite -->
-  <div class="tropical-deco deco-flower-1">
+  <!-- Palmes haut-droite : fronds rayonnent depuis le coin haut-droite -->
+  <div class="tropical-deco deco-tr">
+    <svg width="240" height="220" viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg">
+      <path d="M202,-5 C207,28 212,78 208,128 C204,170 196,202 190,224
+               C198,200 206,166 208,122 C212,76 206,28 212,-5 Z" fill="#338844"/>
+      <path d="M196,-5 C202,30 206,80 202,132 C198,172 190,204 184,224"
+            stroke="#1e5c24" stroke-width="1.2" fill="none"/>
+      <path d="M245,44 C210,29 162,19 104,32 C60,42 23,62 -5,90
+               C26,64 63,46 105,38 C162,26 208,40 245,60 Z" fill="#2d8a3a"/>
+      <path d="M245,51 C209,37 160,27 102,40 C57,50 20,68 -5,95"
+            stroke="#1e5c24" stroke-width="1.2" fill="none"/>
+      <path d="M245,16 C215,19 172,34 128,62 C92,84 60,114 40,148
+               C62,114 94,84 130,60 C172,34 215,24 245,30 Z" fill="#3d9948"/>
+      <path d="M245,-5 C228,12 208,36 188,68 C172,92 158,122 150,152
+               C162,122 176,92 192,65 C212,36 230,12 245,6 Z" fill="#1a6b28"/>
+    </svg>
+  </div>
+
+  <!-- Feuilles milieu-gauche : s'étendent vers la droite -->
+  <div class="tropical-deco deco-ml">
+    <svg width="160" height="280" viewBox="0 0 160 280" xmlns="http://www.w3.org/2000/svg">
+      <path d="M32,280 C28,234 24,172 30,115 C36,66 46,34 52,12
+               C44,36 34,68 28,117 C22,176 18,236 24,280 Z" fill="#338844"/>
+      <path d="M-5,102 C18,89 52,81 95,86 C126,90 150,101 162,115
+               C148,104 124,93 92,89 C52,84 19,93 -5,113 Z" fill="#2d8a3a"/>
+      <path d="M0,108 C22,96 55,88 98,92 C128,96 152,106 162,118"
+            stroke="#1e5c24" stroke-width="1.2" fill="none"/>
+      <path d="M-5,187 C16,174 48,167 88,172 C118,176 145,186 162,200
+               C144,188 116,179 85,175 C48,170 16,178 -5,200 Z" fill="#3d9948"/>
+      <path d="M-5,242 C14,228 42,212 76,200 C104,190 135,184 158,181
+               C134,186 104,194 76,206 C44,219 16,234 -5,256 Z" fill="#2a8040"/>
+    </svg>
+  </div>
+
+  <!-- Feuilles milieu-droite : s'étendent vers la gauche (chemins miroirs) -->
+  <div class="tropical-deco deco-mr">
+    <svg width="160" height="280" viewBox="0 0 160 280" xmlns="http://www.w3.org/2000/svg">
+      <path d="M128,280 C132,234 136,172 130,115 C124,66 114,34 108,12
+               C116,36 126,68 132,117 C138,176 142,236 136,280 Z" fill="#338844"/>
+      <path d="M165,102 C142,89 108,81 65,86 C34,90 10,101 -2,115
+               C12,104 36,93 68,89 C108,84 141,93 165,113 Z" fill="#2d8a3a"/>
+      <path d="M160,108 C138,96 105,88 62,92 C32,96 8,106 -2,118"
+            stroke="#1e5c24" stroke-width="1.2" fill="none"/>
+      <path d="M165,187 C144,174 112,167 72,172 C42,176 15,186 -2,200
+               C16,188 44,179 75,175 C112,170 144,178 165,200 Z" fill="#3d9948"/>
+      <path d="M165,242 C146,228 118,212 84,200 C56,190 25,184 2,181
+               C26,186 56,194 84,206 C116,219 144,234 165,256 Z" fill="#2a8040"/>
+    </svg>
+  </div>
+
+  <!-- Fleur hibiscus jaune -->
+  <div class="tropical-deco deco-fl1">
     <svg width="80" height="80" viewBox="-40 -40 80 80" xmlns="http://www.w3.org/2000/svg">
       <path d="M0,-6 C-10,-18 -12,-32 0,-40 C12,-32 10,-18 0,-6 Z" fill="#FFD700"/>
       <path d="M0,-6 C-10,-18 -12,-32 0,-40 C12,-32 10,-18 0,-6 Z" fill="#FFD700" transform="rotate(72)"/>
@@ -109,8 +121,8 @@
     </svg>
   </div>
 
-  <!-- Fleur hibiscus orange — gauche milieu -->
-  <div class="tropical-deco deco-flower-2">
+  <!-- Fleur hibiscus orange -->
+  <div class="tropical-deco deco-fl2">
     <svg width="65" height="65" viewBox="-32 -32 64 64" xmlns="http://www.w3.org/2000/svg">
       <path d="M0,-5 C-8,-15 -10,-26 0,-33 C10,-26 8,-15 0,-5 Z" fill="#FF8C00"/>
       <path d="M0,-5 C-8,-15 -10,-26 0,-33 C10,-26 8,-15 0,-5 Z" fill="#FF8C00" transform="rotate(72)"/>
@@ -122,42 +134,67 @@
     </svg>
   </div>
 
-  <!-- Fleur hibiscus jaune petite — droite milieu -->
-  <div class="tropical-deco deco-flower-3">
-    <svg width="60" height="60" viewBox="-30 -30 60 60" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0,-5 C-8,-14 -9,-24 0,-30 C9,-24 8,-14 0,-5 Z" fill="#FFD700"/>
-      <path d="M0,-5 C-8,-14 -9,-24 0,-30 C9,-24 8,-14 0,-5 Z" fill="#FFD700" transform="rotate(72)"/>
-      <path d="M0,-5 C-8,-14 -9,-24 0,-30 C9,-24 8,-14 0,-5 Z" fill="#FFD700" transform="rotate(144)"/>
-      <path d="M0,-5 C-8,-14 -9,-24 0,-30 C9,-24 8,-14 0,-5 Z" fill="#FFD700" transform="rotate(216)"/>
-      <path d="M0,-5 C-8,-14 -9,-24 0,-30 C9,-24 8,-14 0,-5 Z" fill="#FFD700" transform="rotate(288)"/>
+  <!-- Petite fleur hibiscus jaune -->
+  <div class="tropical-deco deco-fl3">
+    <svg width="55" height="55" viewBox="-27 -27 54 54" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,-4 C-7,-13 -9,-22 0,-28 C9,-22 7,-13 0,-4 Z" fill="#FFD700"/>
+      <path d="M0,-4 C-7,-13 -9,-22 0,-28 C9,-22 7,-13 0,-4 Z" fill="#FFD700" transform="rotate(72)"/>
+      <path d="M0,-4 C-7,-13 -9,-22 0,-28 C9,-22 7,-13 0,-4 Z" fill="#FFD700" transform="rotate(144)"/>
+      <path d="M0,-4 C-7,-13 -9,-22 0,-28 C9,-22 7,-13 0,-4 Z" fill="#FFD700" transform="rotate(216)"/>
+      <path d="M0,-4 C-7,-13 -9,-22 0,-28 C9,-22 7,-13 0,-4 Z" fill="#FFD700" transform="rotate(288)"/>
       <circle cx="0" cy="0" r="7" fill="#FF8C00"/>
     </svg>
   </div>
 
-  <!-- Étoiles scintillantes -->
-  <div class="tropical-deco deco-sparkles">
-    <svg width="310" height="70" viewBox="0 0 310 70" xmlns="http://www.w3.org/2000/svg">
-      <path d="M22,14 L24,7 L26,14 L33,16 L26,18 L24,25 L22,18 L15,16 Z" fill="white" opacity="0.9"/>
-      <path d="M82,42 L83,38 L84,42 L88,43 L84,44 L83,48 L82,44 L78,43 Z" fill="white" opacity="0.65"/>
-      <path d="M148,18 L151,8 L154,18 L164,21 L154,24 L151,34 L148,24 L138,21 Z" fill="white" opacity="0.85"/>
-      <path d="M220,50 L221,46 L222,50 L226,51 L222,52 L221,56 L220,52 L216,51 Z" fill="#FFD700" opacity="0.8"/>
-      <path d="M272,14 L274,8 L276,14 L282,16 L276,18 L274,24 L272,18 L266,16 Z" fill="white" opacity="0.75"/>
-      <path d="M306,38 L307,35 L308,38 L311,39 L308,40 L307,43 L306,40 L303,39 Z" fill="#FFD700" opacity="0.6"/>
+  <!-- Caisson clos décoratif -->
+  <div class="tropical-deco deco-cab1">
+    <svg width="88" height="88" viewBox="0 0 88 88" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="3" width="82" height="82" rx="5" fill="none" stroke="#FFD700" stroke-width="2.5"/>
+      <circle cx="44" cy="44" r="31" fill="none" stroke="#FFD700" stroke-width="2"/>
+      <circle cx="44" cy="44" r="19" fill="none" stroke="#FFD700" stroke-width="1.5"/>
+      <circle cx="44" cy="44" r="7"  fill="none" stroke="#FFD700" stroke-width="1.5"/>
+      <circle cx="44" cy="44" r="3"  fill="#FFD700"/>
+      <circle cx="10" cy="10" r="2.5" fill="none" stroke="#FFD700" stroke-width="1.2"/>
+      <circle cx="78" cy="10" r="2.5" fill="none" stroke="#FFD700" stroke-width="1.2"/>
+      <circle cx="10" cy="78" r="2.5" fill="none" stroke="#FFD700" stroke-width="1.2"/>
+      <circle cx="78" cy="78" r="2.5" fill="none" stroke="#FFD700" stroke-width="1.2"/>
     </svg>
   </div>
 
-  <!-- Serpentins confetti -->
-  <div class="tropical-deco deco-confetti">
-    <svg width="55" height="210" viewBox="0 0 55 210" xmlns="http://www.w3.org/2000/svg">
-      <path d="M28,0 Q44,28 18,55 Q2,80 34,108 Q52,132 22,160 Q8,182 30,210"
-            stroke="#FFD700" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-      <path d="M12,15 Q28,42 8,68 Q-4,90 18,115"
-            stroke="#9b59b6" stroke-width="2" fill="none" stroke-linecap="round"/>
-      <!-- Petits ronds confetti -->
-      <circle cx="38" cy="45" r="4" fill="#FFD700" opacity="0.8"/>
-      <circle cx="10" cy="90" r="3" fill="#FF8C00" opacity="0.7"/>
-      <circle cx="42" cy="135" r="4" fill="#FFD700" opacity="0.75"/>
-      <circle cx="15" cy="175" r="3" fill="#9b59b6" opacity="0.6"/>
+  <!-- Caisson évent (ported) décoratif -->
+  <div class="tropical-deco deco-cab2">
+    <svg width="108" height="82" viewBox="0 0 108 82" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="3" width="102" height="76" rx="5" fill="none" stroke="#FFD700" stroke-width="2.5"/>
+      <circle cx="46" cy="40" r="28" fill="none" stroke="#FFD700" stroke-width="2"/>
+      <circle cx="46" cy="40" r="14" fill="none" stroke="#FFD700" stroke-width="1.5"/>
+      <circle cx="46" cy="40" r="5"  fill="#FFD700"/>
+      <rect x="80" y="26" width="20" height="28" rx="4" fill="none" stroke="#FFD700" stroke-width="2"/>
+      <circle cx="10" cy="10" r="2.5" fill="none" stroke="#FFD700" stroke-width="1.2"/>
+      <circle cx="98" cy="10" r="2.5" fill="none" stroke="#FFD700" stroke-width="1.2"/>
+      <circle cx="10" cy="72" r="2.5" fill="none" stroke="#FFD700" stroke-width="1.2"/>
+      <circle cx="98" cy="72" r="2.5" fill="none" stroke="#FFD700" stroke-width="1.2"/>
+    </svg>
+  </div>
+
+  <!-- Petit haut-parleur décoratif -->
+  <div class="tropical-deco deco-cab3">
+    <svg width="62" height="62" viewBox="0 0 62 62" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="2" width="58" height="58" rx="4" fill="none" stroke="#FFD700" stroke-width="2"/>
+      <circle cx="31" cy="31" r="23" fill="none" stroke="#FFD700" stroke-width="1.5"/>
+      <circle cx="31" cy="31" r="12" fill="none" stroke="#FFD700" stroke-width="1.5"/>
+      <circle cx="31" cy="31" r="4"  fill="#FFD700"/>
+    </svg>
+  </div>
+
+  <!-- Étoiles scintillantes -->
+  <div class="tropical-deco deco-stars">
+    <svg width="310" height="65" viewBox="0 0 310 65" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22,13 L24,6 L26,13 L33,15 L26,17 L24,24 L22,17 L15,15 Z" fill="white" opacity="0.9"/>
+      <path d="M82,40 L83,37 L84,40 L87,41 L84,42 L83,45 L82,42 L79,41 Z" fill="white" opacity="0.6"/>
+      <path d="M148,16 L151,6 L154,16 L164,19 L154,22 L151,32 L148,22 L138,19 Z" fill="white" opacity="0.85"/>
+      <path d="M222,48 L223,45 L224,48 L227,49 L224,50 L223,53 L222,50 L219,49 Z" fill="#FFD700" opacity="0.75"/>
+      <path d="M272,12 L274,5 L276,12 L283,14 L276,16 L274,23 L272,16 L265,14 Z" fill="white" opacity="0.8"/>
+      <path d="M305,36 L306,33 L307,36 L310,37 L307,38 L306,41 L305,38 L302,37 Z" fill="#FFD700" opacity="0.55"/>
     </svg>
   </div>
 

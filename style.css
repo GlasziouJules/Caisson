@@ -317,32 +317,36 @@ footer { text-align:center; padding:2rem; color:var(--muted); font-size:.75rem; 
 /* ==========================================
    TROPICAL DECORATIONS
    ========================================== */
-.tropical-deco {
-  position: fixed;
-  pointer-events: none;
-  z-index: 0;
-}
+.tropical-deco { position: fixed; pointer-events: none; z-index: 0; }
 
-/* Coins — les SVG partent exactement du coin, contenu vers l'intérieur */
-.deco-tl { top: 0; left: 0; transform-origin: top left;   animation: swayTL 7s ease-in-out infinite; }
-.deco-tr { top: 0; right: 0; transform-origin: top right;  animation: swayTR 8s ease-in-out infinite; }
-.deco-bl { bottom: 0; left: 0; transform-origin: bottom left;  animation: swayBL 9s ease-in-out infinite; }
-.deco-br { bottom: 0; right: 0; transform-origin: bottom right; animation: swayBR 7.5s ease-in-out infinite; }
+/* Fougères bas + palmes haut-droite + feuilles bords */
+.deco-bl  { bottom: -20px; left:  -12px; transform-origin: bottom left;  animation: swayBL 7s  ease-in-out infinite; }
+.deco-br  { bottom: -20px; right: -12px; transform-origin: bottom right; animation: swayBR 8s  ease-in-out infinite; }
+.deco-tr  { top:    -8px;  right:  -8px; transform-origin: top right;    animation: swayTR 9s  ease-in-out infinite; }
+.deco-ml  { top:    35%;   left:  -10px; transform-origin: left center;   animation: swayML 10s ease-in-out infinite; }
+.deco-mr  { top:    25%;   right: -10px; transform-origin: right center;  animation: swayMR 11s ease-in-out infinite; }
 
-/* Fleurs et étoiles — position absolue dans la page */
-.deco-flower-1 { top: 7vh;  right: 11vw; animation: floatBob 4s ease-in-out infinite; }
-.deco-flower-2 { top: 38vh; left: 0.5vw; animation: floatBob 5s ease-in-out infinite .6s; }
-.deco-flower-3 { top: 60vh; right: 0.5vw; animation: floatBob 4.5s ease-in-out infinite 1.2s; }
-.deco-sparkles { top: 5vh; left: 28%; }
-.deco-confetti { top: 18vh; right: 1vw; }
+/* Fleurs hibiscus (px pour éviter le clustering) */
+.deco-fl1 { top:  8vh; right: 160px; animation: floatBob 4s   ease-in-out infinite; }
+.deco-fl2 { top: 42vh; left:   15px; animation: floatBob 5s   ease-in-out infinite .5s; }
+.deco-fl3 { top: 65vh; right:  15px; animation: floatBob 4.5s ease-in-out infinite 1s; }
+
+/* Caissons de basse décoratifs */
+.deco-cab1 { top:    14vh; right:  12px; opacity: 0.38; animation: floatBob 6s   ease-in-out infinite .3s; }
+.deco-cab2 { top:    52vh; left:   12px; opacity: 0.32; animation: floatBob 7s   ease-in-out infinite .9s; }
+.deco-cab3 { bottom: 16vh; right:  14px; opacity: 0.30; animation: floatBob 5.5s ease-in-out infinite .6s; }
+
+/* Étoiles */
+.deco-stars { top: 4vh; left: 22%; }
 
 main, header, footer { position: relative; z-index: 1; }
 
-@keyframes swayTL { 0%,100%{transform:rotate(0deg)}   50%{transform:rotate(3deg)} }
-@keyframes swayTR { 0%,100%{transform:rotate(0deg)}   50%{transform:rotate(-3deg)} }
-@keyframes swayBL { 0%,100%{transform:rotate(0deg)}   50%{transform:rotate(-3deg)} }
-@keyframes swayBR { 0%,100%{transform:rotate(0deg)}   50%{transform:rotate(3deg)} }
-@keyframes floatBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+@keyframes swayBL { 0%,100%{transform:rotate(0deg)}  50%{transform:rotate(4deg)} }
+@keyframes swayBR { 0%,100%{transform:rotate(0deg)}  50%{transform:rotate(-4deg)} }
+@keyframes swayTR { 0%,100%{transform:rotate(0deg)}  50%{transform:rotate(-3deg)} }
+@keyframes swayML { 0%,100%{transform:rotate(0deg)}  50%{transform:rotate(3deg)} }
+@keyframes swayMR { 0%,100%{transform:rotate(0deg)}  50%{transform:rotate(-4deg)} }
+@keyframes floatBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
 
 /* ==========================================
    UTILITIES & ANIMATIONS
