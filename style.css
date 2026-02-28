@@ -2,23 +2,23 @@
    VARIABLES & RESET
    ========================================== */
 :root {
-  --bg:        #021a05;
-  --surface:   #052b0a;
-  --card:      #063310;
-  --card-alt:  #0a3d14;
-  --border:    #1a6b2a;
+  --bg:        #1c6b25;
+  --surface:   #155020;
+  --card:      #0e3a14;
+  --card-alt:  #123e18;
+  --border:    #2a8035;
   --accent:    #FFD700;
   --accent2:   #009c3b;
   --success:   #00c853;
   --warning:   #f59e0b;
   --danger:    #ef4444;
-  --text:      #f1f5f9;
-  --muted:     #86a88e;
-  --input-bg:  #011003;
+  --text:      #f0faf2;
+  --muted:     #9acca5;
+  --input-bg:  #0a2a0e;
   --radius:    12px;
   --radius-sm: 6px;
   --shadow:    0 4px 24px rgba(0,0,0,0.5);
-  --glow:      0 0 20px rgba(255,215,0,0.28);
+  --glow:      0 0 20px rgba(255,215,0,0.35);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,7 +29,7 @@ body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var
    HEADER
    ========================================== */
 header {
-  background: linear-gradient(135deg,#021a05 0%,#052b0a 50%,#031205 100%);
+  background: linear-gradient(135deg,#155020 0%,#1c6b25 50%,#124d1e 100%);
   border-bottom: 1px solid var(--border);
   padding: 1.4rem 2rem;
   position: sticky; top: 0; z-index: 100;
@@ -286,7 +286,7 @@ input:checked ~ .toggle-switch::after { transform: translateX(20px); }
 
 #viewer-container {
   position:relative; width:100%; aspect-ratio:16/10;
-  background:linear-gradient(160deg,#010e02 0%,#020f03 100%);
+  background:linear-gradient(160deg,#0a2810 0%,#0c3212 100%);
   border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
 }
 #three-canvas { width:100% !important; height:100% !important; display:block; }
@@ -321,38 +321,28 @@ footer { text-align:center; padding:2rem; color:var(--muted); font-size:.75rem; 
   position: fixed;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.72;
 }
-.deco-left {
-  bottom: -30px; left: -18px;
-  transform-origin: bottom left;
-  animation: swayLeft 7s ease-in-out infinite;
-}
-.deco-right {
-  bottom: -30px; right: -18px;
-  transform-origin: bottom right;
-  animation: swayRight 8s ease-in-out infinite;
-  transform: scaleX(-1);
-}
-.deco-top-right {
-  top: 60px; right: -10px;
-  transform-origin: top right;
-  animation: swayLeft 9s ease-in-out infinite;
-  opacity: 0.55;
-}
-.deco-mid-left {
-  top: 40%; left: -15px;
-  transform-origin: left center;
-  animation: swayRight 11s ease-in-out infinite;
-  opacity: 0.45;
-}
+
+/* Coins — les SVG partent exactement du coin, contenu vers l'intérieur */
+.deco-tl { top: 0; left: 0; transform-origin: top left;   animation: swayTL 7s ease-in-out infinite; }
+.deco-tr { top: 0; right: 0; transform-origin: top right;  animation: swayTR 8s ease-in-out infinite; }
+.deco-bl { bottom: 0; left: 0; transform-origin: bottom left;  animation: swayBL 9s ease-in-out infinite; }
+.deco-br { bottom: 0; right: 0; transform-origin: bottom right; animation: swayBR 7.5s ease-in-out infinite; }
+
+/* Fleurs et étoiles — position absolue dans la page */
+.deco-flower-1 { top: 7vh;  right: 11vw; animation: floatBob 4s ease-in-out infinite; }
+.deco-flower-2 { top: 38vh; left: 0.5vw; animation: floatBob 5s ease-in-out infinite .6s; }
+.deco-flower-3 { top: 60vh; right: 0.5vw; animation: floatBob 4.5s ease-in-out infinite 1.2s; }
+.deco-sparkles { top: 5vh; left: 28%; }
+.deco-confetti { top: 18vh; right: 1vw; }
+
 main, header, footer { position: relative; z-index: 1; }
 
-@keyframes swayLeft  { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(4deg)} }
-@keyframes swayRight { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(-4deg)} }
-/* fix scaleX + sway combo for deco-right */
-.deco-right { animation: swayRightMirror 8s ease-in-out infinite; }
-@keyframes swayRightMirror { 0%,100%{transform:scaleX(-1) rotate(0deg)} 50%{transform:scaleX(-1) rotate(4deg)} }
+@keyframes swayTL { 0%,100%{transform:rotate(0deg)}   50%{transform:rotate(3deg)} }
+@keyframes swayTR { 0%,100%{transform:rotate(0deg)}   50%{transform:rotate(-3deg)} }
+@keyframes swayBL { 0%,100%{transform:rotate(0deg)}   50%{transform:rotate(-3deg)} }
+@keyframes swayBR { 0%,100%{transform:rotate(0deg)}   50%{transform:rotate(3deg)} }
+@keyframes floatBob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
 
 /* ==========================================
    UTILITIES & ANIMATIONS
