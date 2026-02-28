@@ -546,10 +546,9 @@ class EnclosureViewer {
 
     // Cadre / anneau externe
     const frameMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.6 });
-    this.group.add(Object.assign(
-      new THREE.Mesh(new THREE.RingGeometry(radius * 0.85, radius, 72), frameMat),
-      { position: new THREE.Vector3(cx, cy, z) }
-    ));
+    const frame = new THREE.Mesh(new THREE.RingGeometry(radius * 0.85, radius, 72), frameMat);
+    frame.position.set(cx, cy, z);
+    this.group.add(frame);
 
     // Suspension (tore)
     const surrMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.95 });
