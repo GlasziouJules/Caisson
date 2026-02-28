@@ -751,9 +751,10 @@ class App {
       opt.textContent = m.model + ' — ' + (m.power_rms || '?') + 'W  ' + (m.voice_coil || '');
       modSel.appendChild(opt);
     });
-    btn.disabled = false;
+    modSel.disabled = false;
+    btn.disabled = true;
 
-    modSel.addEventListener('change', () => { btn.disabled = !modSel.value; });
+    modSel.onchange = () => { btn.disabled = !modSel.value; };
   }
 
   async _loadSubwoofer() {
