@@ -2,23 +2,23 @@
    VARIABLES & RESET
    ========================================== */
 :root {
-  --bg:        #0f172a;
-  --surface:   #1e293b;
-  --card:      #1e293b;
-  --card-alt:  #243045;
-  --border:    #334155;
-  --accent:    #06b6d4;
-  --accent2:   #7c3aed;
-  --success:   #10b981;
+  --bg:        #021a05;
+  --surface:   #052b0a;
+  --card:      #063310;
+  --card-alt:  #0a3d14;
+  --border:    #1a6b2a;
+  --accent:    #FFD700;
+  --accent2:   #009c3b;
+  --success:   #00c853;
   --warning:   #f59e0b;
   --danger:    #ef4444;
   --text:      #f1f5f9;
-  --muted:     #94a3b8;
-  --input-bg:  #0f1f38;
+  --muted:     #86a88e;
+  --input-bg:  #011003;
   --radius:    12px;
   --radius-sm: 6px;
-  --shadow:    0 4px 24px rgba(0,0,0,0.4);
-  --glow:      0 0 20px rgba(6,182,212,0.25);
+  --shadow:    0 4px 24px rgba(0,0,0,0.5);
+  --glow:      0 0 20px rgba(255,215,0,0.28);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,7 +29,7 @@ body { font-family:'Segoe UI',system-ui,-apple-system,sans-serif; background:var
    HEADER
    ========================================== */
 header {
-  background: linear-gradient(135deg,#0c1729 0%,#162035 50%,#0d1f3a 100%);
+  background: linear-gradient(135deg,#021a05 0%,#052b0a 50%,#031205 100%);
   border-bottom: 1px solid var(--border);
   padding: 1.4rem 2rem;
   position: sticky; top: 0; z-index: 100;
@@ -37,7 +37,7 @@ header {
 }
 .header-inner { max-width:1400px; margin:0 auto; display:flex; align-items:center; gap:2rem; flex-wrap:wrap; }
 .logo { display:flex; align-items:center; gap:.75rem; color:var(--accent); }
-.logo svg { width:40px; height:40px; flex-shrink:0; filter:drop-shadow(0 0 8px rgba(6,182,212,.5)); }
+.logo svg { width:40px; height:40px; flex-shrink:0; filter:drop-shadow(0 0 8px rgba(255,215,0,.5)); }
 .logo span { font-size:1.35rem; font-weight:300; letter-spacing:-.02em; color:var(--text); }
 .logo strong { color:var(--accent); font-weight:700; }
 .tagline { color:var(--muted); font-size:.82rem; margin-left:auto; }
@@ -51,10 +51,10 @@ main { max-width:1400px; margin:0 auto; padding:2rem; display:flex; flex-directi
    CARDS
    ========================================== */
 .card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:1.75rem; box-shadow:var(--shadow); transition:border-color .2s; }
-.card:hover { border-color:#475569; }
+.card:hover { border-color:#2a9042; }
 .card-header { display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; flex-wrap:wrap; }
 .card-header h2 { font-size:1.05rem; font-weight:600; flex:1; }
-.step-badge { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.8rem; flex-shrink:0; box-shadow:0 0 12px rgba(6,182,212,.4); }
+.step-badge { width:30px; height:30px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:.8rem; flex-shrink:0; box-shadow:0 0 12px rgba(255,215,0,.4); color:#021a05; }
 
 /* ==========================================
    API STATUS BADGE
@@ -76,7 +76,7 @@ main { max-width:1400px; margin:0 auto; padding:2rem; display:flex; flex-directi
 @media (max-width:700px) { .db-search-row { grid-template-columns:1fr; } }
 
 .btn-load {
-  background: linear-gradient(135deg,var(--accent2),#6d28d9);
+  background: linear-gradient(135deg,var(--accent2),#007a2f);
   border: none; border-radius: var(--radius-sm);
   color: #fff; cursor: pointer;
   font-size: .88rem; font-weight: 600;
@@ -85,7 +85,7 @@ main { max-width:1400px; margin:0 auto; padding:2rem; display:flex; flex-directi
   transition: all .2s; white-space: nowrap;
 }
 .btn-load svg { width:15px; height:15px; }
-.btn-load:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 4px 14px rgba(124,58,237,.4); }
+.btn-load:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 4px 14px rgba(0,156,59,.4); }
 .btn-load:disabled { opacity:.4; cursor:not-allowed; }
 
 .db-loaded {
@@ -124,7 +124,7 @@ main { max-width:1400px; margin:0 auto; padding:2rem; display:flex; flex-directi
   -moz-appearance:textfield;
 }
 .param-group input[type="number"]:focus,
-.param-group select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(6,182,212,.15); }
+.param-group select:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(255,215,0,.15); }
 .param-group small { font-size:.7rem; color:var(--muted); opacity:.8; }
 
 /* ==========================================
@@ -142,8 +142,8 @@ main { max-width:1400px; margin:0 auto; padding:2rem; display:flex; flex-directi
 .tab-btn svg { width:26px; height:26px; opacity:.6; transition:opacity .2s; }
 .tab-btn span { font-size:.9rem; font-weight:600; color:var(--text); }
 .tab-btn small { font-size:.72rem; color:var(--muted); }
-.tab-btn:hover { border-color:var(--accent); background:rgba(6,182,212,.05); }
-.tab-btn.active { border-color:var(--accent); background:rgba(6,182,212,.1); box-shadow:var(--glow); }
+.tab-btn:hover { border-color:var(--accent); background:rgba(255,215,0,.05); }
+.tab-btn.active { border-color:var(--accent); background:rgba(255,215,0,.1); box-shadow:var(--glow); }
 .tab-btn.active svg { opacity:1; color:var(--accent); }
 
 /* ==========================================
@@ -151,7 +151,7 @@ main { max-width:1400px; margin:0 auto; padding:2rem; display:flex; flex-directi
    ========================================== */
 .type-options { animation:fadeIn .25s ease; }
 .options-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(175px,1fr)); gap:1rem; margin-bottom:1rem; }
-.info-box { background:rgba(6,182,212,.06); border:1px solid rgba(6,182,212,.22); border-radius:var(--radius-sm); padding:.75rem 1rem; font-size:.8rem; color:var(--muted); line-height:1.5; }
+.info-box { background:rgba(0,156,59,.06); border:1px solid rgba(0,156,59,.22); border-radius:var(--radius-sm); padding:.75rem 1rem; font-size:.8rem; color:var(--muted); line-height:1.5; }
 .info-box strong { color:var(--accent); }
 
 /* ==========================================
@@ -206,7 +206,7 @@ input:checked ~ .toggle-switch::after { transform: translateX(20px); }
 .radio-label:hover  { border-color:var(--accent); }
 .radio-label:has(input:checked) {
   border-color: var(--accent);
-  background: rgba(6,182,212,.07);
+  background: rgba(255,215,0,.07);
 }
 
 /* ==========================================
@@ -214,16 +214,16 @@ input:checked ~ .toggle-switch::after { transform: translateX(20px); }
    ========================================== */
 .calculate-wrapper { display:flex; justify-content:center; }
 .btn-calculate {
-  background:linear-gradient(135deg,var(--accent),#0891b2);
+  background:linear-gradient(135deg,var(--accent),#b8960a);
   border:none; border-radius:var(--radius);
-  color:#fff; cursor:pointer; font-size:1.05rem; font-weight:700;
+  color:#021a05; cursor:pointer; font-size:1.05rem; font-weight:700;
   letter-spacing:.03em; padding:.9rem 2.5rem;
   display:flex; align-items:center; gap:.6rem;
-  box-shadow:0 4px 20px rgba(6,182,212,.35);
+  box-shadow:0 4px 20px rgba(255,215,0,.35);
   transition:all .2s; text-transform:uppercase;
 }
 .btn-calculate svg { width:21px; height:21px; }
-.btn-calculate:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(6,182,212,.5); }
+.btn-calculate:hover { transform:translateY(-2px); box-shadow:0 6px 28px rgba(255,215,0,.5); }
 .btn-calculate:active { transform:translateY(0); }
 
 /* ==========================================
@@ -282,11 +282,11 @@ input:checked ~ .toggle-switch::after { transform: translateX(20px); }
 .ctrl-btn { background:var(--input-bg); border:1px solid var(--border); border-radius:var(--radius-sm); color:var(--muted); cursor:pointer; font-size:.72rem; padding:.3rem .65rem; display:flex; align-items:center; gap:.3rem; transition:all .2s; }
 .ctrl-btn svg { width:13px; height:13px; }
 .ctrl-btn:hover { border-color:var(--accent); color:var(--accent); }
-.ctrl-btn.active { background:rgba(6,182,212,.15); border-color:var(--accent); color:var(--accent); }
+.ctrl-btn.active { background:rgba(255,215,0,.15); border-color:var(--accent); color:var(--accent); }
 
 #viewer-container {
   position:relative; width:100%; aspect-ratio:16/10;
-  background:linear-gradient(160deg,#0c1829 0%,#0f2040 100%);
+  background:linear-gradient(160deg,#010e02 0%,#020f03 100%);
   border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
 }
 #three-canvas { width:100% !important; height:100% !important; display:block; }
@@ -313,6 +313,46 @@ input:checked ~ .toggle-switch::after { transform: translateX(20px); }
    FOOTER
    ========================================== */
 footer { text-align:center; padding:2rem; color:var(--muted); font-size:.75rem; border-top:1px solid var(--border); line-height:1.9; }
+
+/* ==========================================
+   TROPICAL DECORATIONS
+   ========================================== */
+.tropical-deco {
+  position: fixed;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.72;
+}
+.deco-left {
+  bottom: -30px; left: -18px;
+  transform-origin: bottom left;
+  animation: swayLeft 7s ease-in-out infinite;
+}
+.deco-right {
+  bottom: -30px; right: -18px;
+  transform-origin: bottom right;
+  animation: swayRight 8s ease-in-out infinite;
+  transform: scaleX(-1);
+}
+.deco-top-right {
+  top: 60px; right: -10px;
+  transform-origin: top right;
+  animation: swayLeft 9s ease-in-out infinite;
+  opacity: 0.55;
+}
+.deco-mid-left {
+  top: 40%; left: -15px;
+  transform-origin: left center;
+  animation: swayRight 11s ease-in-out infinite;
+  opacity: 0.45;
+}
+main, header, footer { position: relative; z-index: 1; }
+
+@keyframes swayLeft  { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(4deg)} }
+@keyframes swayRight { 0%,100%{transform:rotate(0deg)} 50%{transform:rotate(-4deg)} }
+/* fix scaleX + sway combo for deco-right */
+.deco-right { animation: swayRightMirror 8s ease-in-out infinite; }
+@keyframes swayRightMirror { 0%,100%{transform:scaleX(-1) rotate(0deg)} 50%{transform:scaleX(-1) rotate(4deg)} }
 
 /* ==========================================
    UTILITIES & ANIMATIONS
