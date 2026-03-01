@@ -136,24 +136,37 @@ class Calculator {
   /** Dimensions du caisson depuis le volume interne */
   static boxDimensions(Vb_liters, driverDiam_mm, panelThick_mm = 18, numSubs = 1) {
     const Vb_cm3 = Vb_liters * 1000;
-    const d_cm   = driverDiam_mm / 10;
-    const t      = panelThick_mm / 10;
+    const d  = driverDiam_mm / 10;   // cm
+    const t  = panelThick_mm / 10;
 
-    // Largeur minimale : 125% du diamètre HP
-    const minW = d_cm * 1.25;
-    // Hauteur minimale pour numSubs HP (en prévision de l'évent)
-    const minH = d_cm * (numSubs === 2 ? 2.8 : 1.4);
+    // ── Contraintes physiques minimales ────────────────────
+    // Largeur : le(s) HP doit(vent) tenir sur le panneau avant
+    const minW = d * (numSubs === 2 ? 2.3 : 1.2);
+    // Profondeur : la corbeille + le moteur du HP occupent ~65% du diamètre
+    const minD = Math.max(d * 0.65, 18);
+    // Hauteur : au moins 1 diamètre
+    const minH = d * 1.2;
 
-    // Proportion initiale W:H:D ≈ 1:1.3:0.9
-    let W = Math.max(Math.cbrt(Vb_cm3 / (1.3 * 0.9)), minW);
-    let H = Math.max(W * 1.3, minH);
-    let D = Vb_cm3 / (W * H);
+    // ── 1. Profondeur idéale ≈ racine cubique de Vb ────────
+    let D = Math.max(Math.cbrt(Vb_cm3 * 0.55), minD);
 
-    // Si profondeur trop grande : augmenter les proportions
-    if (D > H * 1.2) {
-      W = Math.max(Math.cbrt(Vb_cm3 / 0.9), minW);
-      H = Math.max(W, minH);
-      D = Vb_cm3 / (W * H);
+    // ── 2. Surface frontale et dimensions W × H ────────────
+    const S = Vb_cm3 / D;                 // surface W×H nécessaire
+    let W = Math.max(Math.sqrt(S / 1.35), minW);
+    let H = S / W;
+
+    // ── 3. Si hauteur trop petite, refaire avec H=minH ─────
+    if (H < minH) {
+      H = minH;
+      W = Math.max(S / H, minW);
+      // Si même avec W=minW la profondeur serait inférieure à minD, forcer minD
+      D = Math.max(Vb_cm3 / (W * H), minD);
+    }
+
+    // ── 4. Double sub : caisson plus large ─────────────────
+    if (numSubs === 2) {
+      W = Math.max(W * 1.55, d * 2.4);
+      H = Math.max(Vb_cm3 / (W * D), minH);
     }
 
     return {
@@ -1101,11 +1114,11 @@ class App {
 
     if (type === 'sealed') {
       add('Fc système', Math.round(calc.Fc), 'Hz');
-      add('Qtc système', calc.Qtc.toFixed(3));
+      add('Qtc système', calc.Qtc.toFixed(3), '');
       add('f(−3 dB)', Math.round(calc.f3), 'Hz', 'highlight');
     } else if (type === 'ported') {
       add('Accord évent Fb', Math.round(calc.Fb), 'Hz', 'highlight');
-      add('Qtb système', (calc.Qb ?? 0).toFixed(3));
+      add('Qtb système', (calc.Qb ?? 0).toFixed(3), '');
       add('f(−3 dB)', Math.round(calc.f3), 'Hz');
       if (portType === 'slot') {
         add('Hauteur fente', slotH_cm?.toFixed(1), 'cm');
@@ -1171,6 +1184,10 @@ class App {
       warns.push('Volume très important (> 300 L) : vérifiez vos paramètres T/S.');
     if (numSubs === 2 && doubleSubMode === 'isobaric')
       warns.push('Isobarique : le 2ème HP est monté face contre face à l\'intérieur. Volume réduit de moitié.');
+    // Avertir si les dims réelles sont plus grandes que le volume optimal
+    const realVol = (dims.internal.W * dims.internal.H * dims.internal.D) / 1000;
+    if (!this._customDims && realVol > calc.Vb * 1.25)
+      warns.push(`Volume réel du caisson (${realVol.toFixed(0)} L) supérieur au volume optimal (${calc.Vb.toFixed(0)} L) — dimensions minimales physiques appliquées pour loger le HP.`);
 
     const wEl = document.getElementById('warnings-box');
     if (warns.length) {
