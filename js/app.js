@@ -104,6 +104,17 @@ class Calculator {
     return Math.max(Le - 0.73 * (portDiam_mm / 10), 2);
   }
 
+  /** Longueur tunnel d'un slot port (évent en fente rectangulaire) */
+  static portSlotLength(Fb, Vb_liters, slotW_cm, slotH_cm) {
+    const A      = slotW_cm * slotH_cm;        // cm²
+    const Vb_cm3 = Vb_liters * 1000;
+    const c      = 34400;
+    const Le     = (c * c * A) / (4 * Math.PI ** 2 * Fb * Fb * Vb_cm3);
+    // Correction d'extrémité slot : diamètre hydraulique Dh = 2WH/(W+H)
+    const Dh = 2 * slotW_cm * slotH_cm / (slotW_cm + slotH_cm);
+    return Math.max(Le - 0.82 * Dh, 2);
+  }
+
   static bandpass(Fs, Qts, Vas, ratio = 0.6) {
     const alpha_f  = (0.707 / Qts) ** 2 - 1;
     const Vb_front = Vas / alpha_f;
@@ -395,45 +406,49 @@ class EnclosureViewer {
   }
 
   // ── Calcul des positions HP et évent sur le panneau avant ─
-  _computeLayout(numSubs, h, w, driverR, portR) {
+  _computeLayout(numSubs, h, w, driverR, portR, isSlot = false, slotH_m = 0) {
     const gap = Math.max(0.02, h * 0.04);
     let speakers, port = null;
 
-    if (numSubs === 1) {
+    if (isSlot) {
+      // Slot port : les HP se positionnent dans la partie haute du panneau
+      const upperBot = -h / 2 + slotH_m;  // bas de la zone disponible
+      const upperH   = h - slotH_m;
+      const upperCenter = upperBot + upperH / 2;
+      if (numSubs === 1) {
+        speakers = [{ x: 0, y: upperCenter + upperH * 0.04 }];
+      } else {
+        speakers = [
+          { x: 0, y: upperCenter + driverR * 0.85 },
+          { x: 0, y: upperCenter - driverR * 0.85 },
+        ];
+      }
+    } else if (numSubs === 1) {
       if (portR > 0) {
-        // HP légèrement au-dessus du centre
-        const spkY     = h * 0.12;
-        const portY    = Math.max(
-          spkY - driverR - gap - portR,
-          -h / 2 + portR + gap
-        );
+        const spkY  = h * 0.12;
+        const portY = Math.max(spkY - driverR - gap - portR, -h / 2 + portR + gap);
         speakers = [{ x: 0, y: spkY }];
         port     = { x: 0, y: portY };
       } else {
         speakers = [{ x: 0, y: 0 }];
       }
     } else {
-      // Double sub — HPs empilés verticalement
       if (portR > 0) {
         const spk1Y = h * 0.30;
         const spk2Y = spk1Y - driverR - gap - driverR;
-        const portY = Math.max(
-          spk2Y - driverR - gap - portR,
-          -h / 2 + portR + gap
-        );
+        const portY = Math.max(spk2Y - driverR - gap - portR, -h / 2 + portR + gap);
         speakers = [{ x: 0, y: spk1Y }, { x: 0, y: spk2Y }];
         port     = { x: 0, y: portY };
       } else {
-        const spk1Y =  h * 0.22;
-        const spk2Y = -h * 0.22;
-        speakers = [{ x: 0, y: spk1Y }, { x: 0, y: spk2Y }];
+        speakers = [{ x: 0, y: h * 0.22 }, { x: 0, y: -h * 0.22 }];
       }
     }
     return { speakers, port };
   }
 
   // ── Construction principale ──────────────────────────────
-  build(type, dims, numSubs, driverDiam_mm, portDiam_mm, portLen_cm) {
+  build(type, dims, numSubs, driverDiam_mm, portDiam_mm, portLen_cm,
+        portShape = 'round', slotH_cm = 0) {
     // Vider le groupe
     while (this.group.children.length > 0) {
       const c = this.group.children[0];
@@ -443,53 +458,54 @@ class EnclosureViewer {
 
     const { W, H, D } = dims.external;
     const w = W / 100, h = H / 100, d = D / 100;   // cm → m
-    const t = 0.018;                                 // épaisseur panneau 18mm
+    const t = 0.018;
 
-    const driverR = (driverDiam_mm / 2) / 1000;
-    const portR   = (type === 'ported' && portDiam_mm > 0) ? (portDiam_mm / 2) / 1000 : 0;
+    const driverR  = (driverDiam_mm / 2) / 1000;
+    const isSlot   = type === 'ported' && portShape === 'slot';
+    const slotH_m  = isSlot ? Math.min(slotH_cm / 100, h * 0.45) : 0;
+    const portLen_m = Math.max((portLen_cm || 20) / 100, 0.05);
+    const portR    = (!isSlot && type === 'ported' && portDiam_mm > 0)
+                     ? (portDiam_mm / 2) / 1000 : 0;
 
-    // Positions cohérentes HP + évent
-    const layout  = this._computeLayout(numSubs, h, w, driverR, portR);
+    const layout = this._computeLayout(numSubs, h, w, driverR, portR, isSlot, slotH_m);
 
-    // Grille sous le caisson
     this._grid.position.y = -h / 2 - 0.01;
 
-    // Matériaux
     const matWood  = this._woodMat(0x7A5C18);
     const matFront = this._woodMat(0x6B4F14);
 
     // Panneaux (sans la face avant)
-    this._addPanel(w,       h,       t,       0,           0,            -d/2 + t/2, matWood); // arrière
-    this._addPanel(t,       h,       d - 2*t, -w/2 + t/2, 0,            0,           matWood); // gauche
-    this._addPanel(t,       h,       d - 2*t,  w/2 - t/2, 0,            0,           matWood); // droite
-    this._addPanel(w,       t,       d - t,   0,           h/2 - t/2,  -t/2,          matWood); // dessus
-    this._addPanel(w,       t,       d - t,   0,          -h/2 + t/2,  -t/2,          matWood); // dessous
+    this._addPanel(w,       h,       t,       0,            0,           -d/2 + t/2, matWood); // arrière
+    this._addPanel(t,       h,       d - 2*t, -w/2 + t/2,  0,            0,          matWood); // gauche
+    this._addPanel(t,       h,       d - 2*t,  w/2 - t/2,  0,            0,          matWood); // droite
+    this._addPanel(w,       t,       d - t,    0,            h/2 - t/2, -t/2,         matWood); // dessus
+    this._addPanel(w,       t,       d - t,    0,           -h/2 + t/2, -t/2,         matWood); // dessous
 
-    // Panneau avant avec découpes HP (et évent)
-    this._buildFrontPanel(w, h, t, d, driverR, layout.speakers,
-                          portR > 0 ? portR   : 0,
-                          portR > 0 ? layout.port : null,
-                          matFront);
+    // Panneau avant
+    if (isSlot) {
+      this._buildSlotFrontPanel(w, h, t, d, driverR, layout.speakers, slotH_m, matFront);
+      this._buildSlotBaffle(w, h, t, d, slotH_m, portLen_m, matWood);
+    } else {
+      this._buildFrontPanel(w, h, t, d, driverR, layout.speakers,
+                            portR > 0 ? portR      : 0,
+                            portR > 0 ? layout.port : null,
+                            matFront);
+      if (portR > 0 && layout.port) {
+        this._buildPort(portR, portLen_m, d / 2, layout.port.x, layout.port.y);
+      }
+    }
 
     // HPs
     layout.speakers.forEach(pos => this._buildSpeaker(driverR, d / 2, pos.x, pos.y));
 
-    // Évent
-    if (portR > 0 && layout.port) {
-      const portLen_m = Math.max((portLen_cm || 20) / 100, 0.05);
-      this._buildPort(portR, portLen_m, d / 2, layout.port.x, layout.port.y);
-    }
-
-    // Vis décoratives sur les coins
+    // Vis décoratives
     this._addCornerScrews(w, h, d);
 
-    // Ajuster la caméra
     const maxDim = Math.max(w, h, d);
     this.camera.position.set(maxDim * 1.8, maxDim * 1.2, maxDim * 2.3);
     this.controls.target.set(0, 0, 0);
     this.controls.update();
 
-    // Référence pour le toggle wireframe
     this._allMeshes = [];
     this.group.traverse(c => { if (c.isMesh) this._allMeshes.push(c); });
     this._applyWireframe(this._wireframe);
@@ -537,6 +553,39 @@ class EnclosureViewer {
     mesh.position.set(0, 0, d / 2 - t);
     mesh.castShadow = mesh.receiveShadow = true;
     this.group.add(mesh);
+  }
+
+  // ── Panneau avant avec slot en bas (évent en fente) ──────
+  _buildSlotFrontPanel(w, h, t, d, speakerR, speakerPositions, slotH, mat) {
+    const shape = new THREE.Shape();
+    // Rectangle du haut du panneau, au-dessus de l'ouverture de fente
+    shape.moveTo(-w / 2, -h / 2 + slotH);
+    shape.lineTo( w / 2, -h / 2 + slotH);
+    shape.lineTo( w / 2,  h / 2);
+    shape.lineTo(-w / 2,  h / 2);
+    shape.closePath();
+    // Découpes HP
+    speakerPositions.forEach(pos => {
+      const hole = new THREE.Path();
+      hole.absarc(pos.x, pos.y, speakerR, 0, Math.PI * 2, true);
+      shape.holes.push(hole);
+    });
+    const geo  = new THREE.ExtrudeGeometry(shape, { depth: t, bevelEnabled: false });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(0, 0, d / 2 - t);
+    mesh.castShadow = mesh.receiveShadow = true;
+    this.group.add(mesh);
+  }
+
+  // ── Étagère intérieure du slot port ───────────────────────
+  _buildSlotBaffle(w, h, t, d, slotH, portLen, mat) {
+    // L'étagère est au-dessus du slot, à y = -h/2 + slotH
+    // Elle va de la face avant vers l'intérieur sur une longueur = portLen
+    const bY   = -h / 2 + slotH + t / 2;
+    const bLen = Math.min(portLen, d - 2 * t - 0.005);
+    const bZ   = d / 2 - t - bLen / 2;   // centre en Z
+    const bW   = w - 2 * t;              // largeur interne
+    this._addPanel(bW, t, bLen, 0, bY, bZ, mat);
   }
 
   // ── Haut-parleur ─────────────────────────────────────────
@@ -690,14 +739,22 @@ class App {
     this._activeType    = 'sealed';
     this._doubleSub     = false;
     this._doubleSubMode = 'parallel';
+    this._portType      = 'round';
+    this._simpleMode    = true;
+    this._customDims    = false;
 
     this._checkApi().then(() => this._loadBrands());
     this._bindTabs();
     this._bindPresets();
     this._bindDoubleSub();
+    this._bindModeToggle();
+    this._bindPortType();
+    this._bindCustomDims();
     this._bindCalculate();
     this._bindButtons();
     this._bindResize();
+    // Initialiser l'info-box simple avec les valeurs 12"
+    this._applySimplePreset('sub12');
   }
 
   // ── API ──────────────────────────────────────────────────
@@ -832,6 +889,72 @@ class App {
     });
   }
 
+  // ── Mode Simple / Avancé ────────────────────────────────
+  _bindModeToggle() {
+    const btnSimple   = document.getElementById('mode-simple');
+    const btnAdvanced = document.getElementById('mode-advanced');
+    const simplePanel = document.getElementById('simple-panel');
+    const advPanel    = document.getElementById('advanced-panel');
+
+    btnSimple?.addEventListener('click', () => {
+      this._simpleMode = true;
+      btnSimple.classList.add('active');
+      btnAdvanced.classList.remove('active');
+      simplePanel?.classList.remove('hidden');
+      advPanel?.classList.add('hidden');
+    });
+    btnAdvanced?.addEventListener('click', () => {
+      this._simpleMode = false;
+      btnAdvanced.classList.add('active');
+      btnSimple.classList.remove('active');
+      simplePanel?.classList.add('hidden');
+      advPanel?.classList.remove('hidden');
+    });
+    document.getElementById('simple-size')?.addEventListener('change', e => {
+      this._applySimplePreset(e.target.value);
+    });
+  }
+
+  _applySimplePreset(key) {
+    const SIMPLE_PRESETS = {
+      sub8:  { Fs:52, Qts:0.45, Qes:0.55, Qms:3.0, Vas:10,  Xmax:7,  Re:4.0, diameter:200, power:150  },
+      sub10: { Fs:42, Qts:0.40, Qes:0.48, Qms:3.2, Vas:22,  Xmax:9,  Re:3.5, diameter:250, power:250  },
+      sub12: { Fs:35, Qts:0.35, Qes:0.40, Qms:3.5, Vas:40,  Xmax:12, Re:3.2, diameter:305, power:400  },
+      sub15: { Fs:28, Qts:0.30, Qes:0.34, Qms:3.8, Vas:80,  Xmax:16, Re:2.8, diameter:380, power:600  },
+      sub18: { Fs:22, Qts:0.27, Qes:0.31, Qms:4.1, Vas:140, Xmax:20, Re:2.4, diameter:460, power:1000 },
+    };
+    const p = SIMPLE_PRESETS[key]; if (!p) return;
+    Object.entries(p).forEach(([k, v]) => {
+      const el = document.getElementById(k); if (el) el.value = v;
+    });
+    const infoLabels = { sub8:'8"', sub10:'10"', sub12:'12"', sub15:'15"', sub18:'18"' };
+    const info = document.getElementById('simple-info');
+    if (info) info.innerHTML =
+      `<strong>${infoLabels[key] || key} générique :</strong> Fs=${p.Fs}Hz · Qts=${p.Qts} · Vas=${p.Vas}L · Xmax=${p.Xmax}mm`;
+  }
+
+  // ── Port type (rond / fente) ─────────────────────────────
+  _bindPortType() {
+    document.querySelectorAll('input[name="port-type"]').forEach(r => {
+      r.addEventListener('change', () => {
+        this._portType = r.value;
+        const isSlot = r.value === 'slot';
+        document.getElementById('port-round-opts')?.classList.toggle('hidden', isSlot);
+        document.getElementById('port-slot-opts')?.classList.toggle('hidden', !isSlot);
+      });
+    });
+  }
+
+  // ── Dimensions personnalisées ────────────────────────────
+  _bindCustomDims() {
+    const toggle = document.getElementById('custom-dims-toggle');
+    const opts   = document.getElementById('custom-dims-opts');
+    toggle?.addEventListener('change', () => {
+      this._customDims = toggle.checked;
+      opts?.classList.toggle('hidden', !this._customDims);
+    });
+  }
+
   // ── Calculate ────────────────────────────────────────────
   _bindCalculate() {
     document.getElementById('btn-calculate')?.addEventListener('click', () => {
@@ -848,6 +971,15 @@ class App {
   }
 
   _calculate() {
+    // Mode simple : synchroniser puissance + appliquer le preset
+    if (this._simpleMode) {
+      const sizeKey = document.getElementById('simple-size')?.value || 'sub12';
+      this._applySimplePreset(sizeKey);
+      const sp = document.getElementById('simple-power');
+      const pw = document.getElementById('power');
+      if (sp && pw) pw.value = sp.value;
+    }
+
     const Fs       = this._getNum('Fs');
     const Qts      = this._getNum('Qts');
     const Qes      = this._getNum('Qes');
@@ -861,6 +993,7 @@ class App {
     const numSubs  = this._doubleSub ? 2 : 1;
 
     let calc, panelThick, portDiam_mm = 0, portLen_cm = 0, portCount = 1;
+    let slotH_cm = 0, slotW_cm = 0;
 
     if (type === 'sealed') {
       panelThick = this._getNum('panel-thick-sealed');
@@ -868,15 +1001,27 @@ class App {
       calc       = Calculator.sealed(Fs, Qts, Vas, Qtc);
 
     } else if (type === 'ported') {
-      panelThick  = this._getNum('panel-thick-ported');
-      const Fb_v  = parseFloat(document.getElementById('Fb').value);
-      portDiam_mm = this._getNum('port-diam');
-      portCount   = parseInt(document.getElementById('port-count').value) || 1;
-      calc        = Calculator.ported(Fs, Qts, Vas, isNaN(Fb_v) ? null : Fb_v);
-      portLen_cm  = Calculator.portLength(calc.Fb, calc.Vb, portDiam_mm, portCount);
-      calc.portLen   = portLen_cm;
-      calc.portDiam  = portDiam_mm;
-      calc.portCount = portCount;
+      const isSlot = this._portType === 'slot';
+
+      if (!isSlot) {
+        panelThick  = this._getNum('panel-thick-ported');
+        const Fb_v  = parseFloat(document.getElementById('Fb').value);
+        portDiam_mm = this._getNum('port-diam');
+        portCount   = parseInt(document.getElementById('port-count').value) || 1;
+        calc        = Calculator.ported(Fs, Qts, Vas, isNaN(Fb_v) ? null : Fb_v);
+        portLen_cm  = Calculator.portLength(calc.Fb, calc.Vb, portDiam_mm, portCount);
+        calc.portLen = portLen_cm; calc.portDiam = portDiam_mm; calc.portCount = portCount;
+      } else {
+        panelThick = this._getNum('panel-thick-slot');
+        const Fb_v = parseFloat(document.getElementById('Fb-slot').value);
+        slotH_cm   = this._getNum('slot-height');
+        calc       = Calculator.ported(Fs, Qts, Vas, isNaN(Fb_v) ? null : Fb_v);
+        // largeur slot = largeur interne, calculée depuis les dims prévisionnelles
+        const previewDims = Calculator.boxDimensions(calc.Vb, diameter, panelThick, numSubs);
+        slotW_cm   = previewDims.internal.W;
+        portLen_cm = Calculator.portSlotLength(calc.Fb, calc.Vb, slotW_cm, slotH_cm);
+        calc.portLen = portLen_cm; calc.slotH = slotH_cm; calc.slotW = slotW_cm;
+      }
 
     } else {
       panelThick = this._getNum('panel-thick-bp');
@@ -888,21 +1033,49 @@ class App {
     if (numSubs === 2) {
       const factor = this._doubleSubMode === 'isobaric' ? 0.5 : 2;
       if (type === 'bandpass') {
-        calc.Vb_front *= factor;
-        calc.Vb_back  *= factor;
-        calc.Vb       *= factor;
+        calc.Vb_front *= factor; calc.Vb_back *= factor; calc.Vb *= factor;
       } else {
         calc.Vb *= factor;
       }
       if (type === 'ported') {
-        portLen_cm = Calculator.portLength(calc.Fb, calc.Vb, portDiam_mm, portCount);
-        calc.portLen = portLen_cm;
+        if (this._portType === 'slot') {
+          const pd2 = Calculator.boxDimensions(calc.Vb, diameter, panelThick, numSubs);
+          slotW_cm   = pd2.internal.W;
+          portLen_cm = Calculator.portSlotLength(calc.Fb, calc.Vb, slotW_cm, slotH_cm);
+          calc.portLen = portLen_cm; calc.slotW = slotW_cm;
+        } else {
+          portLen_cm = Calculator.portLength(calc.Fb, calc.Vb, portDiam_mm, portCount);
+          calc.portLen = portLen_cm;
+        }
       }
     }
 
-    const dims = Calculator.boxDimensions(calc.Vb, diameter, panelThick, numSubs);
-    this._results = { type, calc, dims, Fs, Qts, Vas, Xmax, diameter, power,
-                      portDiam_mm, portLen_cm, numSubs, doubleSubMode: this._doubleSubMode };
+    // Dimensions : calculées ou personnalisées
+    let dims;
+    if (this._customDims) {
+      const cW = this._getNum('custom-W');
+      const cH = this._getNum('custom-H');
+      const cD = this._getNum('custom-D');
+      const t  = panelThick / 10;
+      dims = {
+        external: { W: cW,     H: cH,     D: cD     },
+        internal: { W: cW-2*t, H: cH-2*t, D: cD-2*t },
+      };
+      // Recalculer longueur slot avec la vraie largeur interne
+      if (type === 'ported' && this._portType === 'slot') {
+        slotW_cm   = dims.internal.W;
+        portLen_cm = Calculator.portSlotLength(calc.Fb, calc.Vb, slotW_cm, slotH_cm);
+        calc.portLen = portLen_cm; calc.slotW = slotW_cm;
+      }
+    } else {
+      dims = Calculator.boxDimensions(calc.Vb, diameter, panelThick, numSubs);
+    }
+
+    this._results = {
+      type, calc, dims, Fs, Qts, Vas, Xmax, diameter, power,
+      portDiam_mm, portLen_cm, numSubs, doubleSubMode: this._doubleSubMode,
+      portType: this._portType, slotH_cm, slotW_cm,
+    };
 
     this._renderResults();
     this._render3D();
@@ -912,7 +1085,8 @@ class App {
 
   // ── Résultats ────────────────────────────────────────────
   _renderResults() {
-    const { type, calc, dims, diameter, portDiam_mm, portLen_cm, numSubs, doubleSubMode } = this._results;
+    const { type, calc, dims, diameter, portDiam_mm, portLen_cm, numSubs, doubleSubMode,
+            portType, slotH_cm, slotW_cm } = this._results;
 
     // Métriques
     const grid = document.getElementById('metrics-grid');
@@ -933,7 +1107,13 @@ class App {
       add('Accord évent Fb', Math.round(calc.Fb), 'Hz', 'highlight');
       add('Qtb système', (calc.Qb ?? 0).toFixed(3));
       add('f(−3 dB)', Math.round(calc.f3), 'Hz');
-      add('Long. évent', portLen_cm.toFixed(1), 'cm');
+      if (portType === 'slot') {
+        add('Hauteur fente', slotH_cm?.toFixed(1), 'cm');
+        add('Largeur fente', slotW_cm?.toFixed(0), 'cm');
+        add('Long. tunnel', portLen_cm.toFixed(1), 'cm');
+      } else {
+        add('Long. évent', portLen_cm.toFixed(1), 'cm');
+      }
     } else {
       add('Vol. chambre avant', calc.Vb_front.toFixed(1), 'L');
       add('Vol. chambre arrière', calc.Vb_back.toFixed(1), 'L');
@@ -962,11 +1142,19 @@ class App {
       row('Profondeur int.', int.D.toFixed(0), 'cm');
 
     if (type === 'ported') {
-      dimsEl.innerHTML +=
-        `<div class="dims-section-title" style="margin-top:.5rem">Évent</div>` +
-        row('Diamètre évent', portDiam_mm, 'mm') +
-        row('Longueur évent', portLen_cm.toFixed(1), 'cm') +
-        row('Nombre d\'évents', calc.portCount || 1, '');
+      dimsEl.innerHTML += `<div class="dims-section-title" style="margin-top:.5rem">Évent</div>`;
+      if (portType === 'slot') {
+        dimsEl.innerHTML +=
+          row('Type', 'Fente (Slot port)', '') +
+          row('Largeur fente', (slotW_cm ?? 0).toFixed(0), 'cm') +
+          row('Hauteur fente', (slotH_cm ?? 0).toFixed(1), 'cm') +
+          row('Longueur tunnel', portLen_cm.toFixed(1), 'cm');
+      } else {
+        dimsEl.innerHTML +=
+          row('Diamètre évent', portDiam_mm, 'mm') +
+          row('Longueur évent', portLen_cm.toFixed(1), 'cm') +
+          row("Nombre d'évents", calc.portCount || 1, '');
+      }
     }
 
     // Avertissements
@@ -1002,8 +1190,10 @@ class App {
   _render3D() {
     const canvas = document.getElementById('three-canvas');
     if (!this._viewer) this._viewer = new EnclosureViewer(canvas);
-    const { type, calc, dims, diameter, portDiam_mm, portLen_cm, numSubs } = this._results;
-    this._viewer.build(type, dims, numSubs, diameter, portDiam_mm, portLen_cm);
+    const { type, calc, dims, diameter, portDiam_mm, portLen_cm, numSubs,
+            portType, slotH_cm } = this._results;
+    this._viewer.build(type, dims, numSubs, diameter, portDiam_mm, portLen_cm,
+                       portType || 'round', slotH_cm || 0);
   }
 
   // ── Boutons ───────────────────────────────────────────────

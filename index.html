@@ -295,24 +295,59 @@
          SECTION 1 — PARAMÈTRES T/S
     ══════════════════════════════════════════════════════════ -->
     <section class="card" id="section-params">
-      <div class="card-header">
-        <div class="step-badge">1</div>
-        <h2>Paramètres du Haut-Parleur</h2>
-        <div class="presets-wrapper">
-          <label>Présets :</label>
-          <select id="preset-select">
-            <option value="">— Génériqu —</option>
-            <option value="sub10">10" générique</option>
-            <option value="sub12">12" générique</option>
-            <option value="sub15">15" générique</option>
-            <option value="sub18">18" générique</option>
-          </select>
+      <!-- Barre Mode Simple / Avancé -->
+      <div class="mode-bar">
+        <button class="mode-btn active" id="mode-simple">
+          Simple
+          <small>Choisissez juste la taille</small>
+        </button>
+        <button class="mode-btn" id="mode-advanced">
+          Avancé
+          <small>Paramètres Thiele-Small</small>
+        </button>
+      </div>
+
+      <!-- PANNEAU SIMPLE -->
+      <div id="simple-panel">
+        <div class="options-row">
+          <div class="param-group">
+            <label for="simple-size">Taille du haut-parleur</label>
+            <select id="simple-size">
+              <option value="sub8">8 pouces (20 cm)</option>
+              <option value="sub10">10 pouces (25 cm)</option>
+              <option value="sub12" selected>12 pouces (30 cm)</option>
+              <option value="sub15">15 pouces (38 cm)</option>
+              <option value="sub18">18 pouces (46 cm)</option>
+            </select>
+          </div>
+          <div class="param-group">
+            <label for="simple-power">Puissance ampli <span class="unit">W</span></label>
+            <input type="number" id="simple-power" value="400" min="50" max="6000" step="50">
+            <small>Puissance RMS de votre ampli</small>
+          </div>
+        </div>
+        <div class="info-box" id="simple-info">
+          <strong>12 pouces générique :</strong> Fs=35Hz · Qts=0.35 · Vas=40L · Xmax=12mm — idéal pour un caisson évent ou clos.
         </div>
       </div>
 
-      <div class="params-grid">
-        <div class="param-group">
-          <label for="Fs">Fs <span class="unit">Hz</span></label>
+      <!-- PANNEAU AVANCÉ (T/S complets) -->
+      <div id="advanced-panel" class="hidden">
+        <div class="card-header" style="padding:0 0 1rem; border:none; margin:0">
+          <div class="presets-wrapper">
+            <label>Présets :</label>
+            <select id="preset-select">
+              <option value="">— Génériqu —</option>
+              <option value="sub10">10" générique</option>
+              <option value="sub12">12" générique</option>
+              <option value="sub15">15" générique</option>
+              <option value="sub18">18" générique</option>
+            </select>
+          </div>
+        </div>
+        <div class="params-grid">
+          <div class="param-group">
+            <label for="Fs">Fs <span class="unit">Hz</span></label>
           <input type="number" id="Fs" value="35" min="10" max="200" step="0.1">
           <small>Fréquence de résonance</small>
         </div>
@@ -351,12 +386,13 @@
           <input type="number" id="diameter" value="300" min="100" max="600" step="5">
           <small>Diamètre effectif du HP</small>
         </div>
-        <div class="param-group">
-          <label for="power">Puissance <span class="unit">W</span></label>
-          <input type="number" id="power" value="400" min="10" max="6000" step="10">
-          <small>Puissance nominale RMS</small>
+          <div class="param-group">
+            <label for="power">Puissance <span class="unit">W</span></label>
+            <input type="number" id="power" value="400" min="10" max="6000" step="10">
+            <small>Puissance nominale RMS</small>
+          </div>
         </div>
-      </div>
+      </div><!-- /advanced-panel -->
     </section>
 
     <!-- ══════════════════════════════════════════════════════
@@ -419,30 +455,70 @@
 
       <!-- Options Évent -->
       <div class="type-options hidden" id="opts-ported">
-        <div class="options-row">
-          <div class="param-group">
-            <label for="Fb">Accord Fb <span class="unit">Hz</span></label>
-            <input type="number" id="Fb" value="" min="10" max="120" step="0.5" placeholder="Auto (≈ 0.7×Fs)">
-            <small>Laisser vide pour valeur auto</small>
+
+        <!-- Sélecteur type d'évent -->
+        <div class="port-type-row">
+          <label class="radio-label">
+            <input type="radio" name="port-type" value="round" checked>
+            <span><strong>Évent rond</strong><small>Tube PVC/ABS standard</small></span>
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="port-type" value="slot">
+            <span><strong>Évent en fente (Slot port)</strong><small>Panneau intérieur — comme sur une planche</small></span>
+          </label>
+        </div>
+
+        <!-- Options évent ROND -->
+        <div id="port-round-opts">
+          <div class="options-row">
+            <div class="param-group">
+              <label for="Fb">Accord Fb <span class="unit">Hz</span></label>
+              <input type="number" id="Fb" value="" min="10" max="120" step="0.5" placeholder="Auto (≈ 0.7×Fs)">
+              <small>Laisser vide pour valeur auto</small>
+            </div>
+            <div class="param-group">
+              <label for="port-diam">Ø évent <span class="unit">mm</span></label>
+              <input type="number" id="port-diam" value="100" min="30" max="250" step="5">
+              <small>Diamètre interne du tube</small>
+            </div>
+            <div class="param-group">
+              <label for="port-count">Nb évents</label>
+              <input type="number" id="port-count" value="1" min="1" max="4" step="1">
+              <small>1 à 4 évents parallèles</small>
+            </div>
+            <div class="param-group">
+              <label for="panel-thick-ported">Épaisseur <span class="unit">mm</span></label>
+              <input type="number" id="panel-thick-ported" value="18" min="9" max="30" step="1">
+            </div>
           </div>
-          <div class="param-group">
-            <label for="port-diam">Ø évent <span class="unit">mm</span></label>
-            <input type="number" id="port-diam" value="100" min="30" max="250" step="5">
-            <small>Diamètre interne du tube</small>
-          </div>
-          <div class="param-group">
-            <label for="port-count">Nb évents</label>
-            <input type="number" id="port-count" value="1" min="1" max="4" step="1">
-            <small>1 à 4 évents parallèles</small>
-          </div>
-          <div class="param-group">
-            <label for="panel-thick-ported">Épaisseur <span class="unit">mm</span></label>
-            <input type="number" id="panel-thick-ported" value="18" min="9" max="30" step="1">
+          <div class="info-box">
+            <strong>💡 Conseil :</strong> Accord idéal ≈ 0.7 × Fs. Un tube trop court = chuffing. Idéal pour Qts &lt; 0.4. Doubler le diamètre de l'évent réduit sa longueur de 4×.
           </div>
         </div>
-        <div class="info-box">
-          <strong>💡 Conseil :</strong> Accord idéal ≈ 0.7 × Fs. Un tube trop court = chuffing. Idéal pour Qts &lt; 0.4. Doubler le diamètre de l'évent réduit sa longueur de 4×.
+
+        <!-- Options évent en FENTE (Slot Port) -->
+        <div id="port-slot-opts" class="hidden">
+          <div class="options-row">
+            <div class="param-group">
+              <label for="Fb-slot">Accord Fb <span class="unit">Hz</span></label>
+              <input type="number" id="Fb-slot" value="" min="10" max="120" step="0.5" placeholder="Auto (≈ 0.7×Fs)">
+              <small>Laisser vide pour auto</small>
+            </div>
+            <div class="param-group">
+              <label for="slot-height">Hauteur de fente <span class="unit">cm</span></label>
+              <input type="number" id="slot-height" value="12" min="3" max="40" step="0.5">
+              <small>La largeur = largeur interne du caisson</small>
+            </div>
+            <div class="param-group">
+              <label for="panel-thick-slot">Épaisseur <span class="unit">mm</span></label>
+              <input type="number" id="panel-thick-slot" value="18" min="9" max="30" step="1">
+            </div>
+          </div>
+          <div class="info-box">
+            <strong>💡 Slot port :</strong> Le panneau avant est raccourci de la hauteur de fente. Une étagère intérieure crée le tunnel acoustique. Largeur du slot = largeur interne du caisson (automatique).
+          </div>
         </div>
+
       </div>
 
       <!-- Options Bandpass -->
@@ -492,6 +568,40 @@
           </label>
         </div>
       </div>
+
+      <!-- ── Dimensions personnalisées ────────────────────── -->
+      <div class="double-sub-section">
+        <div class="double-sub-header">
+          <label class="toggle-label" for="custom-dims-toggle">
+            <input type="checkbox" id="custom-dims-toggle">
+            <span class="toggle-switch"></span>
+            <span class="toggle-text">
+              <strong>Dimensions personnalisées</strong>
+              <small>Imposer largeur × hauteur × profondeur du caisson</small>
+            </span>
+          </label>
+        </div>
+        <div id="custom-dims-opts" class="double-sub-options hidden">
+          <div class="options-row">
+            <div class="param-group">
+              <label for="custom-W">Largeur ext. <span class="unit">cm</span></label>
+              <input type="number" id="custom-W" value="70" min="20" max="300" step="1">
+            </div>
+            <div class="param-group">
+              <label for="custom-H">Hauteur ext. <span class="unit">cm</span></label>
+              <input type="number" id="custom-H" value="45" min="15" max="200" step="1">
+            </div>
+            <div class="param-group">
+              <label for="custom-D">Profondeur ext. <span class="unit">cm</span></label>
+              <input type="number" id="custom-D" value="55" min="15" max="200" step="1">
+            </div>
+          </div>
+          <div class="info-box">
+            ⚠️ Le volume réel peut différer du volume acoustique optimal. Vérifiez que le volume interne est suffisant pour le haut-parleur sélectionné.
+          </div>
+        </div>
+      </div>
+
     </section>
 
     <!-- BOUTON CALCULER -->
