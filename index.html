@@ -6,14 +6,6 @@
   <title>Calculateur de Caisson de Basse</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="style.css">
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
-    }
-  }
-  </script>
 </head>
 <body>
 
@@ -248,7 +240,7 @@
       <div class="card-header">
         <div class="step-badge">0</div>
         <h2>Choisir un subwoofer <small class="opt">(optionnel)</small></h2>
-        <span id="api-status" class="api-badge api-offline">⚡ Données intégrées</span>
+        <span id="api-status" class="api-badge api-ok">Données intégrées</span>
       </div>
 
       <div class="db-search-row">
@@ -423,16 +415,16 @@
           </div>
         </div>
         <div class="port-type-row">
-          <label class="radio-label"><input type="radio" name="port-type" value="round" checked>
+          <label class="radio-label"><input type="radio" name="port-type" value="round">
             <span><strong>Évent rond</strong><small>Tube PVC, droit ou coudé</small></span></label>
-          <label class="radio-label"><input type="radio" name="port-type" value="slot">
+          <label class="radio-label"><input type="radio" name="port-type" value="slot" checked>
             <span><strong>Évent en fente</strong><small>Planches, sur toute la hauteur ou largeur</small></span></label>
         </div>
-        <div class="options-row" id="port-round-opts">
+        <div class="options-row hidden" id="port-round-opts">
           <div class="param-group"><label for="port-diam">Ø intérieur <span class="unit">mm</span></label><input type="number" id="port-diam" step="1" placeholder="auto"><small>Vide = dimensionné pour la puissance</small></div>
           <div class="param-group"><label for="port-count">Nombre de tubes</label><input type="number" id="port-count" value="1" min="1" max="4" step="1"></div>
         </div>
-        <div class="options-row hidden" id="port-slot-opts">
+        <div class="options-row" id="port-slot-opts">
           <div class="param-group">
             <label for="slot-pos">Position de la fente</label>
             <select id="slot-pos">
@@ -451,7 +443,7 @@
           <div class="param-group"><label for="bp-qtc">Qtc chambre arrière</label><input type="number" id="bp-qtc" value="0.85" min="0.6" max="1.4" step="0.01"><small>Fixe le volume arrière (clos)</small></div>
           <div class="param-group"><label for="bp-fb">Accord avant <span class="unit">Hz</span></label><input type="number" id="bp-fb" step="0.5" placeholder="auto"></div>
           <div class="param-group"><label for="bp-diam">Ø évent <span class="unit">mm</span></label><input type="number" id="bp-diam" step="1" placeholder="auto"></div>
-          <div class="param-group"><label for="bp-count">Nombre de tubes</label><input type="number" id="bp-count" value="1" min="1" max="4" step="1"></div>
+          <div class="param-group"><label for="bp-count">Nombre de tubes</label><input type="number" id="bp-count" min="1" max="4" step="1" placeholder="auto"></div>
         </div>
         <div class="info-box"><strong>💡</strong> Le HP est fixé sur une cloison intérieure : chambre arrière close, chambre avant accordée. Seul l'évent sort du caisson.</div>
       </div>
@@ -544,6 +536,28 @@
 
   <div id="toast" class="toast hidden">✅ Copié dans le presse-papiers</div>
 
-  <script type="module" src="js/app.js"></script>
+  <!-- Three.js (CDN) pour la vue 3D : module en ligne, autorisé même en
+       ouvrant index.html directement (file://), sans serveur. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+    }
+  }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    window.THREE = THREE;
+    window.OrbitControls = OrbitControls;
+    window.dispatchEvent(new Event('three-ready'));
+  </script>
+  <script src="js/data.js"></script>
+  <script src="js/acoustics.js"></script>
+  <script src="js/geometry.js"></script>
+  <script src="js/chart.js"></script>
+  <script src="js/viewer.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>

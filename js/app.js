@@ -5,11 +5,12 @@
 //  5. simulation finale sur le caisson réellement construit
 // ============================================================
 
-import { BRANDS, SUBS, GENERIC, NOMINAL_MM, PVC_SIZES } from './data.js';
-import * as A from './acoustics.js';
-import { designBox, bandpassMinVolumes } from './geometry.js';
-import { Chart } from './chart.js';
-import { EnclosureViewer } from './viewer.js';
+// Scripts classiques (pas de modules) : le site s'ouvre aussi en double-clic
+// sur index.html, sans serveur. A, DATA, GEO, CHART, VIEWER sont chargés avant.
+const { BRANDS, SUBS, GENERIC, NOMINAL_MM, PVC_SIZES } = DATA;
+const { designBox, bandpassMinVolumes } = GEO;
+const { Chart } = CHART;
+const { EnclosureViewer } = VIEWER;
 
 const V_PORT_TARGET = 18;   // m/s : pas de souffle audible
 const V_PORT_MAX    = 30;   // m/s : limite basse si l'évent ne tient pas
@@ -19,27 +20,16 @@ const num = (id, d = null) => { const v = parseFloat($(id)?.value); return Numbe
 const fmt = (v, d = 1) => Number(v).toLocaleString('fr-FR', { maximumFractionDigits: d, minimumFractionDigits: 0 });
 const mm  = cm => Math.round(cm * 10);
 
-// API MySQL uniquement si le site est servi par server.js (port 3001)
-const API = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && location.port === '3001'
-  ? `${location.origin}/api` : null;
-
 /** Erreur de saisie : affichée à l'utilisateur, pas un bug. */
 class InputError extends Error {}
 
-/** Uniformise une fiche HP (API MySQL ou données intégrées). */
+/** Complète une fiche HP (valeurs absentes → null). */
 function normalizeSub(r) {
   const n = v => (v == null || v === '' ? null : +v);
-  const rec = r.rec ?? {
-    sealed: n(r.rec_sealed_l) ?? undefined,
-    ported: r.rec_ported_l ? { vb: +r.rec_ported_l, fb: n(r.rec_ported_fb) ?? undefined } : undefined,
-    src: r.rec_source,
-  };
   return {
-    ...r, fs: +r.fs, qes: +r.qes, qms: +r.qms, vas: +r.vas, xmax: +r.xmax, re: +r.re,
-    size_inch: +r.size_inch, diameter_mm: n(r.diameter_mm),
-    sd: n(r.sd ?? r.sd_cm2), cutout_mm: n(r.cutout_mm), depth_mm: n(r.depth_mm),
-    disp_l: n(r.disp_l), power_rms: n(r.power_rms),
-    rec: rec.sealed || rec.ported ? rec : null, note: r.note ?? '',
+    ...r, diameter_mm: n(r.diameter_mm), sd: n(r.sd), cutout_mm: n(r.cutout_mm),
+    depth_mm: n(r.depth_mm), disp_l: n(r.disp_l), power_rms: n(r.power_rms),
+    rec: r.rec?.sealed || r.rec?.ported ? r.rec : null, note: r.note ?? '',
   };
 }
 
@@ -60,37 +50,21 @@ class App {
     this._loadBrands();
   }
 
-  // ── Base de données ─────────────────────────────────────────
-  async _api(path) {
-    const r = await fetch(API + path, { signal: AbortSignal.timeout(2500) });
-    if (!r.ok) throw new InputError(r.statusText);
-    return r.json();
-  }
-
-  async _loadBrands() {
-    let brands = BRANDS;
-    this.online = false;
-    if (API) {
-      try { brands = await this._api('/brands'); this.online = true; } catch { /* hors-ligne */ }
-    }
-    const st = $('api-status');
-    st.textContent = this.online ? '✅ Base MySQL connectée' : `⚡ ${SUBS.length} modèles intégrés`;
-    st.className = 'api-badge ' + (this.online ? 'api-ok' : 'api-offline');
-
+  // ── Base de données intégrée (js/data.js) ───────────────────
+  _loadBrands() {
+    $('api-status').textContent = `${SUBS.length} modèles intégrés`;
     const sel = $('db-brand');
-    brands.forEach(b => sel.add(new Option(b.name, b.id)));
-    $('brand-chips').innerHTML = brands.map(b => `<span class="brand-chip">${b.name}</span>`).join('');
+    BRANDS.forEach(b => sel.add(new Option(b.name, b.id)));
+    $('brand-chips').innerHTML = BRANDS.map(b => `<span class="brand-chip">${b.name}</span>`).join('');
   }
 
   _bindDb() {
     const brand = $('db-brand'), model = $('db-model'), btn = $('db-load-btn');
-    brand.addEventListener('change', async () => {
+    brand.addEventListener('change', () => {
       model.innerHTML = '<option value="">— Choisir un modèle —</option>';
       btn.disabled = true;
       if (!brand.value) { model.disabled = true; return; }
-      let list = SUBS.filter(s => s.brand_id == brand.value);
-      if (this.online) list = await this._api(`/subwoofers?brand_id=${brand.value}`).catch(() => list);
-      list.forEach(s => model.add(new Option(
+      SUBS.filter(s => s.brand_id == brand.value).forEach(s => model.add(new Option(
         `${s.model} — ${s.size_inch}" · ${s.power_rms ?? '?'} W · ${s.voice_coil ?? ''}`, s.id)));
       model.disabled = false;
     });
@@ -98,9 +72,8 @@ class App {
     btn.addEventListener('click', () => this._loadSub(model.value));
   }
 
-  async _loadSub(id) {
-    let row = SUBS.find(s => s.id == id);
-    if (this.online) row = await this._api(`/subwoofers/${id}`).catch(() => row);
+  _loadSub(id) {
+    const row = SUBS.find(s => s.id == id);
     if (!row) return;
     const s = this.sub = normalizeSub(row);
 
@@ -142,7 +115,11 @@ class App {
     $('mode-advanced').addEventListener('click', () => this._setMode(false));
     $('simple-size').addEventListener('change', () => this._updateSimpleInfo());
     ['Qes', 'Qms'].forEach(id => $(id).addEventListener('input', () => this._updateQts()));
-    $('size').addEventListener('change', () => { if (this.sub) this.sub = null; $('db-loaded-band').classList.add('hidden'); });
+    $('size').addEventListener('change', () => {
+      this.sub = null;
+      $('db-loaded-band').classList.add('hidden');
+      this._syncMakerOption();
+    });
   }
 
   _setMode(simple) {
@@ -151,6 +128,17 @@ class App {
     $('mode-advanced').classList.toggle('active', !simple);
     $('simple-panel').classList.toggle('hidden', !simple);
     $('advanced-panel').classList.toggle('hidden', simple);
+    this._syncMakerOption();
+  }
+
+  /** « Recommandation fabricant » n'a de sens qu'avec un sub chargé, en mode avancé. */
+  _syncMakerOption() {
+    for (const [id, key] of [['sealed-goal', 'sealed'], ['ported-goal', 'ported']]) {
+      const sel = $(id), ok = !this.simple && !!this.sub?.rec?.[key];
+      sel.querySelector('option[value="maker"]').hidden = !ok;
+      if (!ok && sel.value === 'maker') sel.value = sel.options[0].value;
+    }
+    this._applyShowRules();
   }
 
   _updateSimpleInfo() {
@@ -257,7 +245,7 @@ class App {
 
     // Section d'évent : vitesse d'air visée à pleine puissance, bornée par la
     // pratique des fabricants (≈ 2 à 4,5 cm² par litre de volume net).
-    const sizePort = (cfg, kind, vol) => {
+    const sizePort = (cfg, kind, vol, nForced = null) => {
       const U     = A.portVolumeVelocity(cfg);                  // m³/s
       const area  = Math.min(Math.max(U / V_PORT_TARGET * 1e4, 2.2 * vol), 4.5 * vol);
       const minArea = Math.min(area, 2.0 * vol);
@@ -265,14 +253,14 @@ class App {
         return { kind: 'slot', pos: $('slot-pos').value, h: num('slot-h'), area, minArea };
       }
       const pre = type === 'bandpass' ? 'bp' : 'port';
-      const n = Math.max(1, Math.round(num(`${pre}-count`, 1)));
+      const n = nForced ?? Math.max(1, Math.round(num(`${pre}-count`, 1)));
       const userD = num(type === 'bandpass' ? 'bp-diam' : 'port-diam');
       if (userD) return { kind: 'round', d: userD / 10, count: n };
       const dmm = this._pickPvc(area, n);
-      if (n * Math.PI * (dmm / 20) ** 2 < area * 0.8) {
+      if (!nForced && n * Math.PI * (dmm / 20) ** 2 < area * 0.8) {
         notes.push(`Un seul tube de ${dmm} mm est juste pour cette puissance : passez à ${n + 1} tubes ou à un évent en fente.`);
       }
-      return { kind: 'round', d: dmm / 10, count: n, sizes: PVC_SIZES, minArea };
+      return { kind: 'round', d: dmm / 10, count: n, sizes: PVC_SIZES, area, minArea };
     };
 
     // Encombrement physique du HP
@@ -308,7 +296,8 @@ class App {
         goalTxt = goal === 'car' ? 'voiture polyvalent' : 'SPL';
       } else if (goal === 'maker' && rec?.ported) {
         vb = rec.ported.vb * mult;
-        fb = rec.ported.fb ?? A.optimizeFb({ ...base, vb });
+        // Volume seul publié : accord "plat", mais pas sous 32 Hz (usage voiture)
+        fb = rec.ported.fb ?? Math.max(32, A.optimizeFb({ ...base, vb }));
         goalTxt = `recommandation ${rec.src}` + (rec.ported.fb ? '' : ' (accord calculé)');
       } else if (goal === 'custom') {
         vb = num('vb-ported'); fb = num('Fb');
@@ -326,15 +315,32 @@ class App {
     }
 
     if (type === 'bandpass') {
-      const qtcR = num('bp-qtc', 0.85);
-      if (qtcR <= drv.qts * 1.03) throw new InputError(`Le Qtc arrière doit être supérieur au Qts du HP (${fmt(drv.qts, 2)}).`);
+      let qtcR = num('bp-qtc', 0.85);
+      if (qtcR <= drv.qts * 1.03) {
+        notes.push(`Qtc arrière porté à ${fmt(drv.qts * 1.25, 2)} : il doit dépasser le Qts du HP (${fmt(drv.qts, 2)}).`);
+        qtcR = drv.qts * 1.25;
+      }
       const mins = bandpassMinVolumes(geoDrv, t, (num('bp-diam') ?? 100) / 10);
       ({ vr, vf, fb } = A.optimizeBandpass(base, qtcR, num('bp-fb'), mins));
       port = sizePort({ ...base, type, vr, vf, fb }, 'round', vf);
       goalTxt = `Qtc arrière ${fmt(qtcR, 2)}`;
     }
 
-    const geo = designBox({ type, t, drv: geoDrv, vnet: vb, vr, vf, fb, port, custom });
+    let geo = designBox({ type, t, drv: geoDrv, vnet: vb, vr, vf, fb, port, custom });
+
+    // Bandpass, nombre de tubes "auto" : la chambre avant est peu profonde,
+    // un seul gros tube n'y tient souvent pas. On ajoute des tubes (jusqu'à 4)
+    // tant que la section logeable augmente.
+    if (type === 'bandpass' && !num('bp-count') && !num('bp-diam')) {
+      const want = port.area ?? port.minArea;
+      for (let n = 2; n <= 4 && (geo.overflow > 0.5 || geo.portArea < 0.9 * want); n++) {
+        const p2 = sizePort({ ...base, type, vr, vf, fb }, 'round', vf, n);
+        const g2 = designBox({ type, t, drv: geoDrv, vnet: vb, vr, vf, fb, port: p2, custom });
+        const better = (g2.overflow <= 0.5 && geo.overflow > 0.5) ||
+          ((g2.overflow <= 0.5) === (geo.overflow <= 0.5) && g2.portArea > geo.portArea * 1.05);
+        if (better) { geo = g2; port = p2; }
+      }
+    }
     if (port?.kind === 'round') port.d = geo.portD;
     if ((geo.net ?? Math.min(geo.vr, geo.vf)) <= 1) {
       throw new InputError('Dimensions trop petites : il ne reste pas de volume utile une fois le HP et l’évent placés.');
@@ -359,6 +365,18 @@ class App {
     this._renderCuts();
     this._renderWarnings();
     this._renderChart();
+    this._render3d();
+  }
+
+  /** Three.js arrive du CDN : on attend qu'il soit chargé (ou on s'en passe hors connexion). */
+  _render3d() {
+    if (!window.THREE) {
+      if (!this._waiting3d) {
+        this._waiting3d = true;
+        window.addEventListener('three-ready', () => this.r && this._render3d(), { once: true });
+      }
+      return;
+    }
     if (!this.viewer) this.viewer = new EnclosureViewer($('three-canvas'));
     this.viewer.build(this.r.geo);
   }
@@ -483,6 +501,10 @@ class App {
     }
     if (type !== 'sealed') {
       w.push(`Réglez un filtre subsonique vers ${fmt(an.fSub, 0)} Hz : sous l'accord, le HP n'est plus freiné par l'évent.`);
+    }
+    if (type === 'bandpass' && an.fHigh / an.f3 < 1.6) {
+      w.push(`Bande étroite (${fmt(an.f3, 0)}–${fmt(an.fHigh, 0)} Hz) : à cette puissance, une bande plus large ` +
+             `demanderait un évent impossible à loger sans souffle. Pour ce HP, un caisson à évent est plus polyvalent.`);
     }
     if (type === 'ported' && drv.qts > 0.6) w.push(`Qts élevé (${fmt(drv.qts, 2)}) : ce HP est plus à l'aise en caisson clos.`);
     if (type === 'sealed' && drv.qts < 0.3) w.push(`Qts faible (${fmt(drv.qts, 2)}) : ce HP donnera plus de grave en caisson à évent.`);
