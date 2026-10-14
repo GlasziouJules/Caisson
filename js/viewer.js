@@ -104,8 +104,10 @@ const VIEWER = (() => {
     }
 
     // ── Construction ────────────────────────────────────────────
-    build(geo) {
+    /** up : HP vers le haut — la façade du modèle (+z) devient le dessus (+y). */
+    build(geo, up = false) {
       this._clear();
+      this.group.rotation.x = up ? -Math.PI / 2 : 0;
       this.m = this._mats();
       const m = this.m;
       this.woodMats = [m.panel, m.front, m.port];
@@ -141,7 +143,7 @@ const VIEWER = (() => {
                   a.pos.map(v => v * S), { shadow: false }));
 
       // Sol, ombre, caméra
-      const y0 = -geo.H / 2 * S;
+      const y0 = -(up ? geo.D : geo.H) / 2 * S;
       this.floor.position.y = y0 - 0.001;
       this.grid.position.y  = y0 - 0.002;
       const r = Math.hypot(geo.W, geo.H, geo.D) / 2 * S;

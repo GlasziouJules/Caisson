@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap">
-  <link rel="stylesheet" href="style.css?v=20261014g">
+  <link rel="stylesheet" href="style.css?v=20261014h">
 </head>
 <body>
 
@@ -225,6 +225,14 @@
           </select>
         </div>
         <div class="param-group">
+          <label for="orient">Orientation du HP</label>
+          <select id="orient">
+            <option value="front">En façade (vers l'avant)</option>
+            <option value="up">Vers le haut (HP sur le dessus)</option>
+          </select>
+          <small>Vers le haut : la façade devient le dessus</small>
+        </div>
+        <div class="param-group">
           <label for="thick">Épaisseur panneaux <span class="unit">mm</span></label>
           <input type="number" id="thick" value="18" min="9" max="40" step="1">
           <small>MDF 18 ou 19 mm conseillé</small>
@@ -435,11 +443,11 @@
     window.OrbitControls = OrbitControls;
     window.dispatchEvent(new Event('three-ready'));
   </script>
-  <script src="js/data.js?v=20261014g"></script>
-  <script src="js/acoustics.js?v=20261014g"></script>
-  <script src="js/geometry.js?v=20261014g"></script>
-  <script src="js/chart.js?v=20261014g"></script>
-  <script src="js/viewer.js?v=20261014g"></script>
-  <script src="js/app.js?v=20261014g"></script>
+  <script src="js/data.js?v=20261014h"></script>
+  <script src="js/acoustics.js?v=20261014h"></script>
+  <script src="js/geometry.js?v=20261014h"></script>
+  <script src="js/chart.js?v=20261014h"></script>
+  <script src="js/viewer.js?v=20261014h"></script>
+  <script src="js/app.js?v=20261014h"></script>
 </body>
 </html>

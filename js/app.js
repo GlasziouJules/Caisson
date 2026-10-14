@@ -20,6 +20,20 @@ const num = (id, d = null) => { const v = parseFloat($(id)?.value); return Numbe
 const fmt = (v, d = 1) => Number(v).toLocaleString('fr-FR', { maximumFractionDigits: d, minimumFractionDigits: 0 });
 const mm  = cm => Math.round(cm * 10);
 
+/**
+ * HP vers le haut : le calcul se fait toujours "HP en façade" ; on renomme
+ * les pièces et on échange hauteur / profondeur à l'affichage.
+ */
+const UP_NAMES = {
+  'Dessus / dessous': 'Avant / arrière',
+  'Arrière': 'Dessous',
+  'Façade': 'Dessus',
+  'Plancher de fente': 'Cloison de fente (côté arrière)',
+  'Retour de fente (contre l’arrière)': 'Retour de fente (contre le dessous)',
+};
+const cutName = (c, up) => (up && UP_NAMES[c.name]) || c.name;
+const cutNote = (c, up) => (up && c.note ? c.note.replace('le bord gauche / le bas', 'le bord gauche / l’arrière') : c.note);
+
 /** Erreur de saisie : affichée à l'utilisateur, pas un bug. */
 class InputError extends Error {}
 
@@ -223,6 +237,15 @@ class App {
       $('port-slot-opts').classList.toggle('hidden', !slot);
     }));
     ['sealed-goal', 'ported-goal'].forEach(id => $(id).addEventListener('change', () => this._applyShowRules()));
+    // HP vers le haut : la fente "en bas" se retrouve à l'arrière
+    const orientLabels = () => {
+      const up = $('orient').value === 'up';
+      const [side, bottom] = $('slot-pos').options;
+      side.textContent   = up ? 'Sur le côté (toute la profondeur)' : 'Sur le côté (toute la hauteur)';
+      bottom.textContent = up ? 'À l’arrière (toute la largeur)'    : 'En bas (toute la largeur)';
+    };
+    $('orient').addEventListener('change', orientLabels);
+    this._orientLabels = orientLabels;
     $('custom-dims-toggle').addEventListener('change', e => $('custom-dims-opts').classList.toggle('hidden', !e.target.checked));
     $('btn-calculate').addEventListener('click', () => this._run());
   }
@@ -291,8 +314,11 @@ class App {
 
     const t = num('thick', 18) / 10;
     if (t < 0.9 || t > 4) throw new InputError('Épaisseur de panneau entre 9 et 40 mm.');
+    const up = $('orient').value === 'up';
+    // HP vers le haut : la hauteur réelle est la profondeur du modèle (axe du HP)
     const custom = $('custom-dims-toggle').checked
-      ? { W: num('custom-W'), H: num('custom-H'), D: num('custom-D') } : null;
+      ? (up ? { W: num('custom-W'), H: num('custom-D'), D: num('custom-H') }
+            : { W: num('custom-W'), H: num('custom-H'), D: num('custom-D') }) : null;
     if (custom && !(custom.W > 0 && custom.H > 0 && custom.D > 0)) throw new InputError('Dimensions imposées incomplètes.');
 
     let vb = null, fb = null, vr = null, vf = null, port = null, goalTxt = '';
@@ -421,7 +447,7 @@ class App {
     if (geo.portArea) fin.portArea = geo.portArea / 1e4;
     const an = A.analyze(fin);
 
-    this.r = { d, drv, count, iso, vasEq, type, t, custom, geo, an, fin, port, notes, goalTxt,
+    this.r = { d, drv, count, iso, vasEq, type, t, custom, up, geo, an, fin, port, notes, goalTxt,
                target: { vb, fb, vr, vf }, geoDrv };
   }
 
@@ -446,7 +472,7 @@ class App {
       return;
     }
     if (!this.viewer) this.viewer = new EnclosureViewer($('three-canvas'));
-    this.viewer.build(this.r.geo);
+    this.viewer.build(this.r.geo, this.r.up);
   }
 
   _renderMetrics() {
@@ -489,7 +515,8 @@ class App {
     const { geo, type, target, fin, port } = this.r;
     const row = (l, v) => `<div class="dim-row"><span class="dim-label">${l}</span><span class="dim-val">${v}</span></div>`;
     const sec = s => `<div class="dims-section-title">${s}</div>`;
-    const box = o => `${fmt(o.W)} × ${fmt(o.H)} × ${fmt(o.D)} <span>cm</span>`;
+    const up = this.r.up;
+    const box = o => `${fmt(o.W)} × ${fmt(up ? o.D : o.H)} × ${fmt(up ? o.H : o.D)} <span>cm</span>`;
     let h = sec('Dimensions (L × H × P)') +
       row('Extérieur', box(geo.ext)) + row('Intérieur', box(geo.int));
 
@@ -525,13 +552,15 @@ class App {
   _renderCuts() {
     const { geo, t } = this.r;
     const rows = geo.cuts.map(c =>
-      `<tr><td>${c.name}</td><td class="c">${c.qty}</td>` +
+      `<tr><td>${cutName(c, this.r.up)}</td><td class="c">${c.qty}</td>` +
       `<td class="c">${c.b != null ? `${mm(c.a)} × ${mm(c.b)}` : `${mm(c.a)} (longueur)`}</td>` +
-      `<td class="n">${c.note ?? ''}</td></tr>`).join('');
+      `<td class="n">${cutNote(c, this.r.up) ?? ''}</td></tr>`).join('');
     $('cut-table').innerHTML =
       '<thead><tr><th>Pièce</th><th>Qté</th><th>Dimensions (mm)</th><th>Remarque</th></tr></thead>' + `<tbody>${rows}</tbody>`;
     const area = geo.cuts.filter(c => c.b != null).reduce((s, c) => s + c.qty * c.a * c.b, 0) / 1e4;
-    $('cut-sub').textContent = `— panneaux ${mm(t)} mm, ≈ ${fmt(area, 2)} m² · dessus/dessous pleine taille, côtés entre les deux, façade et arrière à l'intérieur`;
+    $('cut-sub').textContent = `— panneaux ${mm(t)} mm, ≈ ${fmt(area, 2)} m² · ${this.r.up
+      ? 'avant/arrière pleine taille, côtés entre les deux, dessus et dessous à l’intérieur'
+      : 'dessus/dessous pleine taille, côtés entre les deux, façade et arrière à l’intérieur'}`;
   }
 
   _renderWarnings() {
@@ -733,6 +762,7 @@ class App {
     this._setMode(st.m === 's');
     this._updateQts();
     this._applyShowRules();
+    this._orientLabels();
     this._run();
   }
 
@@ -788,11 +818,13 @@ class App {
     const { geo, an, fin, type, d } = this.r;
     const names = { sealed: 'clos', ported: 'évent', bandpass: 'bandpass 4e ordre' };
     let s = `=== Caisson ${names[type]} — ${d.name} ===\n`;
-    s += `Extérieur : ${fmt(geo.W)} × ${fmt(geo.H)} × ${fmt(geo.D)} cm (L×H×P)\n`;
+    const up = this.r.up;
+    s += `Extérieur : ${fmt(geo.W)} × ${fmt(up ? geo.D : geo.H)} × ${fmt(up ? geo.H : geo.D)} cm (L×H×P)` +
+         (up ? ' — HP vers le haut' : '') + '\n';
     if (type === 'bandpass') s += `Chambres nettes : arrière ${fmt(fin.vr)} L, avant ${fmt(fin.vf)} L, accord ${fmt(fin.fb)} Hz\n`;
     else s += `Volume net : ${fmt(fin.vb)} L${fin.fb ? `, accord ${fmt(fin.fb)} Hz` : ''}\n`;
     s += `f −3 dB : ${fmt(an.f3, 0)} Hz · SPL max ${fmt(an.splMax, 0)} dB @ ${fmt(d.power, 0)} W\n\nPlan de découpe (mm) :\n`;
-    for (const c of geo.cuts) s += `- ${c.qty} × ${c.name} : ${c.b != null ? `${mm(c.a)} × ${mm(c.b)}` : `${mm(c.a)} de long`}${c.note ? ` (${c.note})` : ''}\n`;
+    for (const c of geo.cuts) s += `- ${c.qty} × ${cutName(c, up)} : ${c.b != null ? `${mm(c.a)} × ${mm(c.b)}` : `${mm(c.a)} de long`}${c.note ? ` (${cutNote(c, up)})` : ''}\n`;
     navigator.clipboard.writeText(s).then(() => {
       this._toast('Résumé copié dans le presse-papiers');
     });
