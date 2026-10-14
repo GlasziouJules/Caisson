@@ -550,7 +550,7 @@ input:focus-visible ~ .toggle-switch { box-shadow: 0 0 0 3px rgba(255,165,61,.3)
    DIVERS
    ============================================================ */
 .toast {
-  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 200;
+  position: fixed; bottom: 1.5rem; left: 1rem; right: 1rem; margin: 0 auto; width: max-content; max-width: calc(100% - 2rem); z-index: 200;
   display: flex; align-items: center; gap: .6rem;
   background: #1b1e24; color: var(--text); border: 1px solid rgba(61,220,151,.4);
   padding: .75rem 1.2rem; border-radius: 99px; font-size: .88rem; font-weight: 500;
@@ -613,3 +613,19 @@ footer b { color: var(--muted); font-weight: 600; }
 .wire-opt.no { opacity: .55; }
 .wire-opt.no b { color: var(--red); }
 .wiring-note { font-size: .76rem; color: var(--dim); margin-top: .3rem; line-height: 1.45; }
+
+/* Mes caissons */
+.card-slim { padding-top: 1.3rem; padding-bottom: 1.3rem; }
+.card-slim .card-header { margin-bottom: 1rem; }
+.card-header h2 small.count { font: 500 .85rem var(--mono); color: var(--muted); margin-left: .3rem; }
+.boxes-list { display: flex; flex-direction: column; gap: .5rem; }
+.box-item {
+  display: flex; align-items: center; gap: .6rem; padding: .7rem .9rem;
+  background: var(--inset); border: 1px solid var(--line); border-radius: 12px;
+}
+.box-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.box-info strong { font-weight: 600; font-size: .92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.box-info small { font-size: .76rem; color: var(--muted); }
+.boxes-empty { font-size: .86rem; color: var(--muted); }
+.saved-note { font-size: .74rem; color: var(--dim); margin-top: .8rem; }
+.hdr-actions { display: flex; gap: .4rem; flex-wrap: wrap; }

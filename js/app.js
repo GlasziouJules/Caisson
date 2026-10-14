@@ -64,6 +64,17 @@ function parseCoil(vc) {
   return m ? { coils: m[1] ? +m[1] : 1, z: +m[2].replace(',', '.') } : null;
 }
 
+// ── « Mes caissons » : réglages complets enregistrés dans ce navigateur ──
+const BOX_KEY = 'swd.myBoxes';
+function loadBoxes() {
+  try { const v = JSON.parse(localStorage.getItem(BOX_KEY)); return Array.isArray(v) ? v : []; }
+  catch { return []; }
+}
+function storeBoxes(list) {
+  try { localStorage.setItem(BOX_KEY, JSON.stringify(list)); return true; } catch { return false; }
+}
+const esc = str => String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
 // ── Lien de partage : réglages encodés dans l'adresse (#p=…) ───
 const b64enc = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const b64dec = str => decodeURIComponent(escape(atob(str.replace(/-/g, '+').replace(/_/g, '/'))));
@@ -84,6 +95,7 @@ class App {
     this._applyShowRules();
     this._loadBrands();
     this._bindMine();
+    this._bindBoxes();
     this._restoreFromLink();
   }
 
@@ -728,11 +740,17 @@ class App {
       .filter(el => /^(INPUT|SELECT)$/.test(el.tagName) && el.type !== 'radio' && el.id !== 'mysub-name');
   }
 
-  _share() {
+  /** Tous les réglages de la page. withMine : garder la référence à un sub de « Mes subs ». */
+  _collectState(withMine = false) {
     const f = {};
     for (const el of this._formFields()) f[el.id] = el.type === 'checkbox' ? el.checked : el.value;
     f['port-type'] = document.querySelector('input[name="port-type"]:checked').value;
-    const st = { v: 1, m: this.simple ? 's' : 'a', t: this.type, sub: this.sub && !isMine(this.sub) ? this.sub.id : null, f };
+    const sub = this.sub && (withMine || !isMine(this.sub)) ? this.sub.id : null;
+    return { v: 1, m: this.simple ? 's' : 'a', t: this.type, sub, f };
+  }
+
+  _share() {
+    const st = this._collectState();
     const url = location.href.split('#')[0] + '#p=' + b64enc(JSON.stringify(st));
     history.replaceState(null, '', url);
     const done = () => this._toast('Lien copié : il rouvre exactement ce caisson');
@@ -745,7 +763,15 @@ class App {
     if (!m) return;
     let st;
     try { st = JSON.parse(b64dec(m[1])); } catch { return; }
+    this._applyState(st);
+  }
+
+  /** Remet la page dans l'état décrit par st (lien partagé ou caisson enregistré) puis calcule. */
+  _applyState(st) {
     if (!st?.f) return;
+    this.sub = null;
+    $('db-loaded-band').classList.add('hidden');
+    $('btn-del-sub').classList.add('hidden');
     if (st.sub != null) this._loadSub(st.sub);
     const f = st.f;
     if (f['simple-size']) { $('simple-size').value = f['simple-size']; this._updateSimpleInfo(); }
@@ -764,6 +790,77 @@ class App {
     this._applyShowRules();
     this._orientLabels();
     this._run();
+  }
+
+  // ── « Mes caissons » · export / import ──────────────────────
+  _bindBoxes() {
+    $('btn-save-box').addEventListener('click', () => {
+      if (!this.r) return;
+      const { d, type, fin } = this.r;
+      const kind = { sealed: 'clos', ported: 'évent', bandpass: 'bandpass' }[type];
+      const vol = type === 'bandpass' ? `${fmt(fin.vr)} + ${fmt(fin.vf)} L` : `${fmt(fin.vb)} L`;
+      const def = `${d.name} — ${kind} ${vol}${fin.fb ? ` à ${fmt(fin.fb)} Hz` : ''}`;
+      const name = prompt('Nom de ce caisson :', def);
+      if (name === null) return;
+      const list = loadBoxes();
+      list.unshift({ id: 'b' + Date.now().toString(36), name: name.trim() || def, date: new Date().toISOString(),
+                     summary: `${kind} · ${vol}${fin.fb ? ` · ${fmt(fin.fb)} Hz` : ''}`, state: this._collectState(true) });
+      if (!storeBoxes(list)) { this._toast('Enregistrement impossible : le stockage du navigateur est bloqué.'); return; }
+      this._renderBoxes();
+      this._toast(`« ${name.trim() || def} » ajouté à Mes caissons`);
+    });
+    $('boxes-list').addEventListener('click', e => {
+      const btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      const list = loadBoxes(), box = list.find(b => b.id === btn.dataset.id);
+      if (!box) return;
+      if (btn.dataset.act === 'open') this._applyState(box.state);
+      else if (confirm(`Supprimer « ${box.name} » ?`)) {
+        storeBoxes(list.filter(b => b !== box));
+        this._renderBoxes();
+        this._toast(`« ${box.name} » supprimé`);
+      }
+    });
+    $('btn-export').addEventListener('click', () => {
+      const data = { app: 'SubWooferDesigner', v: 1, date: new Date().toISOString(), subs: loadMine(), boxes: loadBoxes() };
+      const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], { type: 'application/json' }));
+      const a = Object.assign(document.createElement('a'), { href: url, download: `subwoofer-designer-sauvegarde-${new Date().toISOString().slice(0, 10)}.json` });
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      this._toast(`Sauvegarde exportée : ${data.subs.length} sub(s), ${data.boxes.length} caisson(s)`);
+    });
+    $('btn-import').addEventListener('click', () => $('import-file').click());
+    $('import-file').addEventListener('change', async e => {
+      const file = e.target.files[0];
+      e.target.value = '';
+      if (!file) return;
+      let data;
+      try { data = JSON.parse(await file.text()); } catch { data = null; }
+      if (data?.app !== 'SubWooferDesigner') { this._toast('Ce fichier n’est pas une sauvegarde SubWoofer Designer.'); return; }
+      const merge = (cur, add) => {
+        const ids = new Set(cur.map(x => x.id));
+        const fresh = (Array.isArray(add) ? add : []).filter(x => x?.id && !ids.has(x.id));
+        return [cur.concat(fresh), fresh.length];
+      };
+      const [subs, ns] = merge(loadMine(), data.subs);
+      const [boxes, nb] = merge(loadBoxes(), data.boxes);
+      if (!storeMine(subs) || !storeBoxes(boxes)) { this._toast('Import impossible : le stockage du navigateur est bloqué.'); return; }
+      this._refreshMine();
+      this._renderBoxes();
+      this._toast(`Importé : ${ns} sub(s) et ${nb} caisson(s) ajoutés`);
+    });
+    this._renderBoxes();
+  }
+
+  _renderBoxes() {
+    const list = loadBoxes();
+    $('boxes-count').textContent = list.length ? `(${list.length})` : '';
+    $('boxes-list').innerHTML = list.length
+      ? list.map(b => `<div class="box-item"><div class="box-info"><strong>${esc(b.name)}</strong>` +
+          `<small>${esc(b.summary ?? '')} · ${new Date(b.date).toLocaleDateString('fr-FR')}</small></div>` +
+          `<button class="btn-secondary" data-act="open" data-id="${esc(b.id)}">Ouvrir</button>` +
+          `<button class="btn-secondary btn-danger" data-act="del" data-id="${esc(b.id)}" title="Supprimer">✕</button></div>`).join('')
+      : '<p class="boxes-empty">Aucun caisson enregistré. Calculez un caisson puis cliquez sur « Enregistrer » dans les résultats.</p>';
   }
 
   _renderChart() {
