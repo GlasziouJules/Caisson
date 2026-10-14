@@ -111,7 +111,9 @@ class App {
       model.innerHTML = '<option value="">— Choisir un modèle —</option>';
       btn.disabled = true;
       if (!brand.value) { model.disabled = true; return; }
-      (brand.value === 'mine' ? loadMine() : SUBS.filter(s => s.brand_id == brand.value)).forEach(s => model.add(new Option(
+      (brand.value === 'mine' ? loadMine() : SUBS.filter(s => s.brand_id == brand.value))
+        .slice().sort((a, b) => a.size_inch - b.size_inch || a.model.localeCompare(b.model, 'fr', { numeric: true }))
+        .forEach(s => model.add(new Option(
         `${s.model} — ${s.size_inch}" · ${s.power_rms ?? '?'} W · ${s.voice_coil ?? ''}`, s.id)));
       model.disabled = false;
     });
