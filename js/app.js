@@ -33,6 +33,27 @@ function normalizeSub(r) {
   };
 }
 
+// ── « Mes subs » : fiches enregistrées dans ce navigateur ─────
+const MY_KEY = 'swd.mySubs';
+const isMine = s => String(s?.id ?? '').startsWith('u');
+function loadMine() {
+  try { const v = JSON.parse(localStorage.getItem(MY_KEY)); return Array.isArray(v) ? v : []; }
+  catch { return []; }
+}
+function storeMine(list) {
+  try { localStorage.setItem(MY_KEY, JSON.stringify(list)); return true; } catch { return false; }
+}
+
+/** "2×4Ω" → { coils: 2, z: 4 } ; "4Ω" → { coils: 1, z: 4 }. */
+function parseCoil(vc) {
+  const m = /(?:(\d)\s*×\s*)?(\d+(?:[.,]\d+)?)\s*Ω/.exec(vc ?? '');
+  return m ? { coils: m[1] ? +m[1] : 1, z: +m[2].replace(',', '.') } : null;
+}
+
+// ── Lien de partage : réglages encodés dans l'adresse (#p=…) ───
+const b64enc = str => btoa(unescape(encodeURIComponent(str))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const b64dec = str => decodeURIComponent(escape(atob(str.replace(/-/g, '+').replace(/_/g, '/'))));
+
 class App {
   constructor() {
     this.type      = 'sealed';
@@ -48,14 +69,40 @@ class App {
     this._updateQts();
     this._applyShowRules();
     this._loadBrands();
+    this._bindMine();
+    this._restoreFromLink();
+  }
+
+  _allSubs() { return [...SUBS, ...loadMine()]; }
+
+  _toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.remove('hidden');
+    clearTimeout(this._toastT);
+    this._toastT = setTimeout(() => t.classList.add('hidden'), 2400);
   }
 
   // ── Base de données intégrée (js/data.js) ───────────────────
   _loadBrands() {
     $('api-status').textContent = `${SUBS.length} modèles intégrés`;
+    $('hero-count').textContent = SUBS.length;
     const sel = $('db-brand');
     BRANDS.forEach(b => sel.add(new Option(b.name, b.id)));
     $('brand-chips').innerHTML = BRANDS.map(b => `<span class="brand-chip">${b.name}</span>`).join('');
+    this._refreshMine();
+  }
+
+  /** Ajoute / retire « Mes subs » de la liste des marques. */
+  _refreshMine() {
+    const sel = $('db-brand'), n = loadMine().length;
+    let opt = sel.querySelector('option[value="mine"]');
+    if (n && !opt) { opt = new Option('', 'mine'); sel.add(opt, 1); }
+    if (opt) {
+      if (n) opt.textContent = `★ Mes subs (${n})`;
+      else { if (sel.value === 'mine') { sel.value = ''; sel.dispatchEvent(new Event('change')); } opt.remove(); }
+    }
+    if (sel.value === 'mine') sel.dispatchEvent(new Event('change'));
   }
 
   _bindDb() {
@@ -64,7 +111,7 @@ class App {
       model.innerHTML = '<option value="">— Choisir un modèle —</option>';
       btn.disabled = true;
       if (!brand.value) { model.disabled = true; return; }
-      SUBS.filter(s => s.brand_id == brand.value).forEach(s => model.add(new Option(
+      (brand.value === 'mine' ? loadMine() : SUBS.filter(s => s.brand_id == brand.value)).forEach(s => model.add(new Option(
         `${s.model} — ${s.size_inch}" · ${s.power_rms ?? '?'} W · ${s.voice_coil ?? ''}`, s.id)));
       model.disabled = false;
     });
@@ -73,7 +120,7 @@ class App {
   }
 
   _loadSub(id) {
-    const row = SUBS.find(s => s.id == id);
+    const row = this._allSubs().find(s => String(s.id) === String(id));
     if (!row) return;
     const s = this.sub = normalizeSub(row);
 
@@ -83,6 +130,10 @@ class App {
     set('Fs', s.fs); set('Qes', s.qes); set('Qms', s.qms); set('Vas', s.vas);
     set('Re', s.re); set('Xmax', s.xmax); set('power', s.power_rms ?? 300);
     set('Sd', s.sd); set('cutout', s.cutout_mm); set('depth', s.depth_mm); set('disp', s.disp_l);
+    const coil = parseCoil(s.voice_coil);
+    if (coil) { set('coils', coil.coils); if ([1, 2, 4, 8].includes(coil.z)) set('coil-z', coil.z); }
+    set('mysub-name', isMine(s) ? s.model : '');
+    $('btn-del-sub').classList.toggle('hidden', !isMine(s));
     this._updateQts();
     this._setMode(false);
     // Qts élevé : un Qtc de 0,707 est impossible, on propose 25 % au-dessus du Qts
@@ -118,6 +169,7 @@ class App {
     $('size').addEventListener('change', () => {
       this.sub = null;
       $('db-loaded-band').classList.add('hidden');
+      $('btn-del-sub').classList.add('hidden');
       this._syncMakerOption();
     });
   }
@@ -365,6 +417,7 @@ class App {
     this._renderCuts();
     this._renderWarnings();
     this._renderChart();
+    this._renderWiring();
     this._render3d();
   }
 
@@ -533,7 +586,135 @@ class App {
     $('btn-wireframe').addEventListener('click', e => e.currentTarget.classList.toggle('active', this.viewer?.toggleWireframe()));
     $('btn-reset-cam').addEventListener('click', () => this.viewer?.resetCamera());
     $('btn-copy').addEventListener('click', () => this._copy());
+    $('btn-share').addEventListener('click', () => this._share());
+    $('amp-min').addEventListener('change', () => this._renderWiring());
     new ResizeObserver(() => { this.viewer?.resize(); if (this.r) this._renderChart(); }).observe($('viewer-container'));
+  }
+
+  // ── « Mes subs » ────────────────────────────────────────────
+  _bindMine() {
+    $('btn-save-sub').addEventListener('click', () => {
+      const v = id => num(id);
+      const p = { fs: v('Fs'), qes: v('Qes'), qms: v('Qms'), vas: v('Vas'), re: v('Re'), xmax: v('Xmax'), power: v('power') };
+      if (!Object.values(p).every(x => x > 0)) {
+        this._toast('Renseignez Fs, Qes, Qms, Vas, Re, Xmax et la puissance avant d’enregistrer.');
+        return;
+      }
+      const size = +$('size').value, coils = +$('coils').value, z = +$('coil-z').value;
+      const name = $('mysub-name').value.trim() || `Mon sub ${String(size).replace('.', ',')}"`;
+      const list = loadMine();
+      const id = isMine(this.sub) && list.some(x => x.id === this.sub.id) ? this.sub.id : 'u' + Date.now().toString(36);
+      const row = {
+        id, brand_id: 'mine', model: name, size_inch: size, diameter_mm: null,
+        fs: p.fs, qes: p.qes, qms: p.qms, qts: +A.qtsOf(p.qes, p.qms).toFixed(3), vas: p.vas, xmax: p.xmax, re: p.re,
+        sd: v('Sd'), cutout_mm: v('cutout'), depth_mm: v('depth'), disp_l: v('disp'),
+        voice_coil: coils === 2 ? `2×${z}Ω` : `${z}Ω`, power_rms: p.power, recommended_type: 'both',
+        note: 'Sub enregistré dans ce navigateur.',
+      };
+      const i = list.findIndex(x => x.id === id);
+      if (i >= 0) list[i] = row; else list.push(row);
+      if (!storeMine(list)) { this._toast('Enregistrement impossible : le stockage du navigateur est bloqué.'); return; }
+      this.sub = normalizeSub(row);
+      $('db-loaded-name').textContent = row.model;
+      $('db-note').textContent = ' — enregistré dans Mes subs';
+      $('db-loaded-band').classList.remove('hidden');
+      $('btn-del-sub').classList.remove('hidden');
+      this._refreshMine();
+      this._toast(i >= 0 ? `« ${name} » mis à jour` : `« ${name} » ajouté à Mes subs`);
+    });
+    $('btn-del-sub').addEventListener('click', () => {
+      if (!isMine(this.sub)) return;
+      const name = this.sub.model;
+      storeMine(loadMine().filter(x => x.id !== this.sub.id));
+      this.sub = null;
+      $('db-loaded-band').classList.add('hidden');
+      $('btn-del-sub').classList.add('hidden');
+      $('mysub-name').value = '';
+      this._refreshMine();
+      this._syncMakerOption();
+      this._toast(`« ${name} » supprimé`);
+    });
+  }
+
+  // ── Câblage des bobines ─────────────────────────────────────
+  _renderWiring() {
+    const box = $('wiring-box');
+    if (!this.r || this.simple) { box.classList.add('hidden'); return; }
+    box.classList.remove('hidden');
+    const { count, iso } = this.r;
+    const n = iso ? 2 : count;
+    const coils = +$('coils').value, z = +$('coil-z').value, ampMin = +$('amp-min').value;
+
+    const perHp = coils === 2
+      ? [{ z: 2 * z, t: 'bobines en série' }, { z: z / 2, t: 'bobines en parallèle' }]
+      : [{ z, t: 'bobine unique' }];
+    const opts = [];
+    for (const h of perHp) {
+      if (n === 1) { opts.push({ z: h.z, t: coils === 2 ? `Les 2 ${h.t}` : 'Branchement direct', d: '' }); continue; }
+      const each = coils === 2 ? `chaque HP : ${h.t}` : '';
+      opts.push({ z: h.z * n, t: `${n} HP en série`, d: each });
+      opts.push({ z: h.z / n, t: `${n} HP en parallèle`, d: each });
+      if (n === 4) opts.push({ z: h.z, t: '2 paires en série, mises en parallèle', d: each });
+    }
+    // Une seule ligne par impédance finale
+    const byZ = new Map();
+    for (const o of opts) if (!byZ.has(o.z)) byZ.set(o.z, o);
+    const list = [...byZ.values()].sort((a, b) => a.z - b.z);
+    const best = list.find(o => o.z >= ampMin);
+
+    const zTxt = v => fmt(v, 2) + ' Ω';
+    $('wiring-list').innerHTML = list.map(o => {
+      const cls = o === best ? 'ok best' : o.z >= ampMin ? 'ok' : 'no';
+      return `<div class="wire-opt ${cls}"><b>${zTxt(o.z)}</b><span>${o.t}</span>` +
+             `<small>${[o.d, o.z < ampMin ? 'trop bas pour cet ampli' : ''].filter(Boolean).join(' · ') || 'charge vue par l’ampli'}</small></div>`;
+    }).join('') +
+      `<p class="wiring-note">${best
+        ? `La puissance d’un ampli dépend de la charge : vérifiez qu’il délivre bien ${fmt(this.r.d.power, 0)} W RMS à ${zTxt(best.z)}.`
+        : `Aucun câblage ne descend à ${zTxt(ampMin)} ou plus haut sans risque : choisissez un ampli stable plus bas ou d’autres HP.`}` +
+      ' Ne mélangez jamais série et parallèle sur les deux bobines d’un même HP.</p>';
+  }
+
+  // ── Lien de partage ─────────────────────────────────────────
+  _formFields() {
+    return [...document.querySelectorAll('#section-params [id], #section-type [id]')]
+      .filter(el => /^(INPUT|SELECT)$/.test(el.tagName) && el.type !== 'radio' && el.id !== 'mysub-name');
+  }
+
+  _share() {
+    const f = {};
+    for (const el of this._formFields()) f[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+    f['port-type'] = document.querySelector('input[name="port-type"]:checked').value;
+    const st = { v: 1, m: this.simple ? 's' : 'a', t: this.type, sub: this.sub && !isMine(this.sub) ? this.sub.id : null, f };
+    const url = location.href.split('#')[0] + '#p=' + b64enc(JSON.stringify(st));
+    history.replaceState(null, '', url);
+    const done = () => this._toast('Lien copié : il rouvre exactement ce caisson');
+    if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(done, () => prompt('Copiez ce lien :', url));
+    else prompt('Copiez ce lien :', url);
+  }
+
+  _restoreFromLink() {
+    const m = /^#p=([\w-]+)$/.exec(location.hash);
+    if (!m) return;
+    let st;
+    try { st = JSON.parse(b64dec(m[1])); } catch { return; }
+    if (!st?.f) return;
+    if (st.sub != null) this._loadSub(st.sub);
+    const f = st.f;
+    if (f['simple-size']) { $('simple-size').value = f['simple-size']; this._updateSimpleInfo(); }
+    for (const el of this._formFields()) {
+      if (!(el.id in f)) continue;
+      if (el.type === 'checkbox') el.checked = !!f[el.id];
+      else el.value = f[el.id];
+    }
+    const radio = document.querySelector(`input[name="port-type"][value="${f['port-type']}"]`);
+    if (radio) { radio.checked = true; radio.dispatchEvent(new Event('change')); }
+    $('custom-dims-opts').classList.toggle('hidden', !$('custom-dims-toggle').checked);
+    const tab = document.querySelector(`.tab-btn[data-type="${st.t}"]`);
+    if (tab) tab.click();
+    this._setMode(st.m === 's');
+    this._updateQts();
+    this._applyShowRules();
+    this._run();
   }
 
   _renderChart() {
@@ -594,9 +775,7 @@ class App {
     s += `f −3 dB : ${fmt(an.f3, 0)} Hz · SPL max ${fmt(an.splMax, 0)} dB @ ${fmt(d.power, 0)} W\n\nPlan de découpe (mm) :\n`;
     for (const c of geo.cuts) s += `- ${c.qty} × ${c.name} : ${c.b != null ? `${mm(c.a)} × ${mm(c.b)}` : `${mm(c.a)} de long`}${c.note ? ` (${c.note})` : ''}\n`;
     navigator.clipboard.writeText(s).then(() => {
-      const t = $('toast');
-      t.classList.remove('hidden');
-      setTimeout(() => t.classList.add('hidden'), 2200);
+      this._toast('Résumé copié dans le presse-papiers');
     });
   }
 }
