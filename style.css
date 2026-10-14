@@ -141,6 +141,14 @@ main { max-width:1400px; margin:0 auto; padding:2rem; display:flex; flex-directi
 .mode-btn small { font-weight:400; font-size:.72rem; opacity:.75; }
 .mode-btn.active { background: var(--accent2); color: #fff; }
 .mode-btn.active small { opacity:.9; }
+.card-header h2 small.opt { font-weight:400; font-size:.78rem; color:var(--muted); }
+.db-note { color:var(--muted); font-weight:400; }
+.db-loaded { align-items:flex-start; }
+.sub-title { font-size:.75rem; font-weight:600; color:var(--accent); text-transform:uppercase; letter-spacing:.05em; margin:1.25rem 0 .75rem; }
+.sub-title small { text-transform:none; letter-spacing:0; font-weight:400; color:var(--muted); }
+.calc-out { display:block; background:transparent; border:1px dashed var(--border); border-radius:var(--radius-sm); color:var(--accent); font-size:1rem; font-weight:600; padding:.5rem .7rem; }
+.param-group.wide { grid-column:span 2; }
+.chart-tab.hidden, .chk.hidden { display:none; }
 
 /* ==========================================
    PORT TYPE ROW (round / slot)
@@ -274,7 +282,9 @@ input:checked ~ .toggle-switch::after { transform: translateX(20px); }
 /* ==========================================
    RESULTS LAYOUT
    ========================================== */
-.results-layout { display:grid; grid-template-columns:380px 1fr; gap:1.5rem; align-items:start; }
+.results-layout { display:grid; grid-template-columns:400px 1fr; gap:1.5rem; align-items:start; }
+#section-results > .warnings-box { margin-bottom:1.25rem; }
+#calc-error { max-width:720px; margin:0 auto; width:100%; }
 @media (max-width:920px) { .results-layout { grid-template-columns:1fr; } }
 
 /* ==========================================
@@ -300,6 +310,10 @@ input:checked ~ .toggle-switch::after { transform: translateX(20px); }
 .dim-label { color:var(--muted); }
 .dim-val { font-weight:600; font-variant-numeric:tabular-nums; }
 .dim-val span { color:var(--muted); font-weight:400; font-size:.78rem; margin-left:.15rem; }
+.dim-val { text-align:right; }
+.dim-val b { color:var(--success); }
+.dims-section-title { margin-top:.6rem; }
+.dims-section-title:first-child { margin-top:0; }
 
 /* ==========================================
    WARNINGS
@@ -313,9 +327,27 @@ input:checked ~ .toggle-switch::after { transform: translateX(20px); }
    ========================================== */
 .chart-wrapper { background:var(--card-alt); border:1px solid var(--border); border-radius:var(--radius-sm); padding:.9rem; }
 #freq-chart { width:100%; height:auto; border-radius:4px; display:block; }
-.chart-legend { display:flex; gap:1rem; margin-top:.5rem; font-size:.7rem; color:var(--muted); flex-wrap:wrap; }
-.legend-item { display:flex; align-items:center; gap:.3rem; }
-.dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.chart-head { display:flex; align-items:center; justify-content:space-between; gap:.5rem; margin-bottom:.6rem; flex-wrap:wrap; }
+.chart-tabs { display:flex; gap:.3rem; }
+.chart-tab { background:var(--input-bg); border:1px solid var(--border); border-radius:99px; color:var(--muted); cursor:pointer; font-size:.72rem; font-weight:600; padding:.25rem .75rem; transition:all .2s; }
+.chart-tab:hover { color:var(--accent); border-color:var(--accent); }
+.chart-tab.active { background:rgba(255,215,0,.15); color:var(--accent); border-color:var(--accent); }
+.chk { display:flex; align-items:center; gap:.35rem; font-size:.75rem; color:var(--muted); cursor:pointer; }
+.chk input { accent-color:var(--accent); }
+.chart-note { font-size:.72rem; color:var(--muted); margin-top:.45rem; line-height:1.45; }
+
+/* ==========================================
+   PLAN DE DÉCOUPE
+   ========================================== */
+.cutlist { margin-top:1.5rem; margin-bottom:0; }
+.cutlist h3 small { text-transform:none; letter-spacing:0; font-weight:400; }
+.cut-table { width:100%; border-collapse:collapse; font-size:.84rem; }
+.cut-table th { text-align:left; font-size:.68rem; text-transform:uppercase; letter-spacing:.05em; color:var(--accent); padding:.4rem .5rem; border-bottom:1px solid var(--border); }
+.cut-table td { padding:.45rem .5rem; border-bottom:1px solid rgba(255,255,255,.05); }
+.cut-table td.c, .cut-table th:nth-child(2), .cut-table th:nth-child(3) { text-align:center; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.cut-table td.n { color:var(--muted); font-size:.76rem; }
+.cut-table tr:last-child td { border-bottom:none; }
+@media (max-width:700px) { .cut-table td.n, .cut-table th:nth-child(4) { display:none; } }
 
 /* ==========================================
    3D VIEWER
@@ -330,14 +362,14 @@ input:checked ~ .toggle-switch::after { transform: translateX(20px); }
 .ctrl-btn.active { background:rgba(255,215,0,.15); border-color:var(--accent); color:var(--accent); }
 
 #viewer-container {
-  position:relative; width:100%; aspect-ratio:16/10;
-  background:linear-gradient(160deg,#0a2810 0%,#0c3212 100%);
+  position:relative; width:100%; aspect-ratio:16/11;
+  background:#061a0a;
   border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
 }
 #three-canvas { width:100% !important; height:100% !important; display:block; }
 .viewer-hint {
   position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
-  display:flex; gap:1.5rem; font-size:.68rem; color:rgba(148,163,184,.45);
+  display:flex; gap:1.5rem; font-size:.68rem; color:rgba(200,230,205,.45);
   pointer-events:none; white-space:nowrap;
 }
 
@@ -414,4 +446,6 @@ main, header, footer { position: relative; z-index: 1; }
   .metrics-grid { grid-template-columns:1fr 1fr; }
   .viewer-hint,.tagline { display:none; }
   .db-search-row { grid-template-columns:1fr; }
+  .param-group.wide { grid-column:auto; }
+  .chart-head { flex-direction:column; align-items:flex-start; }
 }

@@ -60,7 +60,7 @@ app.get('/api/health', async (req, res) => {
 app.get('/api/brands', async (req, res) => {
   try {
     const rows = await query(
-      'SELECT id, name, country, website FROM brands ORDER BY name'
+      'SELECT id, name, country FROM brands ORDER BY name'
     );
     res.json(rows);
   } catch (err) {
@@ -125,30 +125,31 @@ app.get('/api/subwoofers/:id/recommendations', async (req, res) => {
     if (rows.length === 0)
       return res.status(404).json({ error: 'Subwoofer introuvable' });
 
-    const s = rows[0];
+    const s   = rows[0];
+    const qts = parseFloat(s.qts), vas = parseFloat(s.vas), fs = parseFloat(s.fs);
     const rec = {
       subwoofer_id: s.id,
       model:        s.model,
-      sealed:  null,
-      ported:  null,
+      manufacturer: {
+        sealed_l: s.rec_sealed_l, ported_l: s.rec_ported_l, ported_fb: s.rec_ported_fb, source: s.rec_source,
+      },
+      sealed: null,
+      ported: null,
     };
 
-    // Sealed — Qtc = 0.707
-    if (s.qts < 0.9) {
-      const alpha   = Math.pow(0.707 / s.qts, 2) - 1;
-      const Vb      = parseFloat(s.vas) / alpha;
-      const Fc      = parseFloat(s.fs) * Math.sqrt(1 + alpha);
-      const a       = 2 - 1 / (0.707 * 0.707);
-      const f3      = Fc * Math.sqrt((a + Math.sqrt(a * a + 4)) / 2);
-      rec.sealed = { Vb: +Vb.toFixed(1), Fc: +Fc.toFixed(1), Qtc: 0.707, f3: +f3.toFixed(1) };
+    // Clos, Qtc 0,707 (possible seulement si Qts < 0,707)
+    if (qts < 0.68) {
+      const alpha = (0.707 / qts) ** 2 - 1;
+      rec.sealed = { Vb: +(vas / alpha).toFixed(1), Fc: +(fs * Math.sqrt(1 + alpha)).toFixed(1), Qtc: 0.707 };
     }
 
-    // Ported — formule empirique
-    if (s.qts <= 0.5) {
-      const Vb = parseFloat(s.vas) * 20 * Math.pow(parseFloat(s.qts), 3.3);
-      const Fb = parseFloat(s.fs) * 0.707;
-      const f3 = Fb * 0.9;
-      rec.ported = { Vb: +Vb.toFixed(1), Fb: +Fb.toFixed(1), f3: +f3.toFixed(1) };
+    // Évent, alignement plat (Keele) — le site affine l'accord par simulation
+    if (qts <= 0.6) {
+      rec.ported = {
+        Vb: +(15 * vas * qts ** 2.87).toFixed(1),
+        Fb: +(0.42 * fs * qts ** -0.9).toFixed(1),
+        f3: +(0.26 * fs * qts ** -1.4).toFixed(1),
+      };
     }
 
     res.json(rec);
