@@ -48,9 +48,13 @@ const CHART = (() => {
         ctx.fillText(+v.toFixed(1), pad.l - 5, fy(v) + 3);
       }
       ctx.textAlign = 'center';
+      let lastEnd = -Infinity;                      // écran étroit : on saute les étiquettes qui se chevauchent
       for (const f of F_TICKS) {
         ctx.beginPath(); ctx.moveTo(fx(f), pad.t); ctx.lineTo(fx(f), pad.t + h); ctx.stroke();
+        const tw = ctx.measureText(String(f)).width;
+        if (fx(f) - tw / 2 < lastEnd + 6) continue;
         ctx.fillText(f, fx(f), pad.t + h + 13);
+        lastEnd = fx(f) + tw / 2;
       }
       ctx.fillText('Hz', pad.l + w / 2, pad.t + h + 26);
       ctx.save();

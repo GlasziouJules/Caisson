@@ -484,7 +484,10 @@ class App {
       }
       return;
     }
-    if (!this.viewer) this.viewer = new EnclosureViewer($('three-canvas'));
+    if (!this.viewer) {
+      this.viewer = new EnclosureViewer($('three-canvas'));
+      this._bindTouch3d();
+    }
     this.viewer.build(this.r.geo, this.r.up);
   }
 
@@ -791,6 +794,22 @@ class App {
     this._applyShowRules();
     this._orientLabels();
     this._run();
+  }
+
+  // ── Écran tactile : la 3D ne capture le doigt qu'à la demande ──
+  // Sinon, faire défiler la page avec le doigt sur la vue 3D fait tourner le
+  // caisson et on reste bloqué. Un voile laisse défiler ; un toucher l'enlève.
+  _bindTouch3d() {
+    if (!matchMedia('(pointer: coarse)').matches) return;
+    const v = this.viewer, veil = $('touch-3d'), done = $('btn-touch-done');
+    const lock = on => {
+      v.controls.enabled = !on;
+      veil.classList.toggle('hidden', !on);
+      done.classList.toggle('hidden', on);
+    };
+    veil.addEventListener('click', () => lock(false));
+    done.addEventListener('click', () => lock(true));
+    lock(true);
   }
 
   // ── « Mes caissons » · export / import ──────────────────────

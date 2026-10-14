@@ -629,3 +629,47 @@ footer b { color: var(--muted); font-weight: 600; }
 .boxes-empty { font-size: .86rem; color: var(--muted); }
 .saved-note { font-size: .74rem; color: var(--dim); margin-top: .8rem; }
 .hdr-actions { display: flex; gap: .4rem; flex-wrap: wrap; }
+
+/* ============================================================
+   MOBILE
+   ============================================================ */
+.touch-3d {
+  position: absolute; inset: 0; z-index: 2; display: flex; align-items: flex-end; justify-content: center;
+  gap: .5rem; padding-bottom: 1.1rem; border: none; cursor: pointer;
+  font: 600 .88rem var(--font); color: var(--text);
+  background: linear-gradient(to top, rgba(12,13,16,.75), rgba(12,13,16,0) 45%);
+}
+.touch-3d svg { color: var(--amber); }
+@media (pointer: coarse) { .viewer-hint { display: none; } }
+
+@media (max-width: 720px) {
+  /* Menu : bande défilante sous le logo */
+  .topbar-inner { flex-wrap: wrap; row-gap: .4rem; padding-bottom: .5rem; }
+  .topnav { display: flex; margin-left: 0; width: 100%; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .topnav::-webkit-scrollbar { display: none; }
+  .topnav a { white-space: nowrap; padding: .4rem .7rem; font-size: .82rem; background: rgba(255,255,255,.04); margin-right: .3rem; }
+  html { scroll-padding-top: 118px; }
+}
+
+@media (max-width: 560px) {
+  /* iPhone : pas de zoom automatique sur les champs (texte ≥ 16 px) */
+  .param-group input[type="number"], .param-group input[type="text"], .param-group select, .wiring-head select { font-size: 16px; }
+  /* Cibles tactiles plus grandes */
+  .ctrl-btn, .chart-tab, .btn-secondary { min-height: 40px; padding: .5rem .95rem; }
+  .chk input, .radio-label input[type="radio"] { width: 20px; height: 20px; }
+  .wiring-head select { min-height: 40px; }
+  /* Plan de découpe : une carte par pièce */
+  .cutlist { overflow: visible; }
+  .cut-table { min-width: 0; }
+  .cut-table thead { display: none; }
+  .cut-table, .cut-table tbody, .cut-table tr, .cut-table td { display: block; }
+  .cut-table tr { display: grid; grid-template-columns: 1fr auto; gap: .15rem .8rem; padding: .7rem 0; border-bottom: 1px solid var(--line); }
+  .cut-table tbody tr:hover { background: none; }
+  .cut-table td { padding: 0; border: none; }
+  .cut-table td:nth-child(1) { grid-column: 1; grid-row: 1; }
+  .cut-table td:nth-child(3) { grid-column: 2; grid-row: 1; text-align: right; white-space: nowrap; }
+  .cut-table td:nth-child(2) { grid-column: 1 / -1; grid-row: 2; text-align: left; font-size: .76rem; color: var(--muted); }
+  .cut-table td:nth-child(2)::before { content: "Quantité : "; font-family: var(--font); }
+  .cut-table td.n { grid-column: 1 / -1; grid-row: 3; }
+  .cut-table td.n:empty { display: none; }
+}
