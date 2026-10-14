@@ -203,12 +203,14 @@ const GEO = (() => {
           ? { size: [Wi, a1 - a0, sz], pos: [0, -Hi / 2 + (a0 + a1) / 2, za] }
           : { size: [a1 - a0, Hi, sz], pos: [Wi / 2 - (a0 + a1) / 2, 0, za] };
       };
-      const straightMax = Di + t - 0.7 * hs;
+      // Sortie intérieure : entre le bout de la planche et l'arrière il faut au
+      // moins la largeur de la fente, sinon l'air est étranglé à la sortie.
+      const straightMax = Di + t - hs;
       let shelfLen, Lb = 0;
       if (Ltarget <= straightMax || Ltarget - Di - t < 1) {
-        Ltarget = Math.min(Ltarget, Di + t - 0.5 * hs);
-        shelfLen = Ltarget;
-        achieved = Ltarget;
+        shelfLen = Math.min(Ltarget, straightMax);
+        achieved = shelfLen;
+        overflow = Math.max(Ltarget - shelfLen, 0);   // fente un peu trop longue : on réduit la section
         air.push(toWorld(0, hs, zF, zF - shelfLen));
       } else {
         folded   = true;
@@ -277,12 +279,12 @@ const GEO = (() => {
     }
     // Fente en section automatique : si elle ne tient pas, on réduit la
     // section (évent plus court) — jusqu'à la section minimale admise.
-    if (port?.kind === 'slot' && port.h == null && !spec.custom) {
+    if (port?.kind === 'slot' && port.h == null) {
       let area = port.area, geo;
-      for (let k = 0; k < 10; k++) {
+      for (let k = 0; k < 30; k++) {
         geo = designOnce({ ...spec, port: { ...port, area } });
-        if (geo.overflow <= 0.5 || area * 0.85 < port.minArea) break;
-        area *= 0.85;
+        if (geo.overflow <= 0.5 || area * 0.95 < 0.9 * port.minArea) break;
+        area *= 0.95;
       }
       geo.areaReduced = area < port.area;
       return geo;
