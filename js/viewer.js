@@ -6,7 +6,7 @@
 const VIEWER = (() => {
 
   const S   = 0.01;           // cm → m
-  const BG  = 0x061a0a;
+  const BG  = 0x0e1014;
   const WALL = 0.4;
 
   class EnclosureViewer {
@@ -27,14 +27,14 @@ const VIEWER = (() => {
       this.scene.background = new THREE.Color(BG);
       this.camera = new THREE.PerspectiveCamera(38, w / h, 0.01, 30);
 
-      this.scene.add(new THREE.HemisphereLight(0xfff6e0, 0x0b2a12, 0.9));
+      this.scene.add(new THREE.HemisphereLight(0xfff6e0, 0x14161b, 0.9));
       const key = new THREE.DirectionalLight(0xffffff, 1.6);
       key.position.set(2.5, 4, 3);
       key.castShadow = true;
       key.shadow.mapSize.set(2048, 2048);
       this.scene.add(key);
       this.key = key;
-      const rim = new THREE.DirectionalLight(0xffd36b, 0.5);
+      const rim = new THREE.DirectionalLight(0xffa53d, 0.7);
       rim.position.set(-3, 1.5, -2.5);
       this.scene.add(rim);
 
@@ -44,7 +44,7 @@ const VIEWER = (() => {
       this.floor.rotation.x = -Math.PI / 2;
       this.floor.receiveShadow = true;
       this.scene.add(this.floor);
-      this.grid = new THREE.GridHelper(8, 80, 0x1e6e2e, 0x0f3a18);
+      this.grid = new THREE.GridHelper(8, 80, 0x34373f, 0x1c1e24);
       this.scene.add(this.grid);
 
       this.controls = new OrbitControls(this.camera, this.renderer.domElement);

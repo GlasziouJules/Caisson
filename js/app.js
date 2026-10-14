@@ -548,34 +548,34 @@ class App {
     $('chk-cabin').parentElement.classList.toggle('hidden', this.chartMode !== 'resp');
 
     const marks = [];
-    if (type === 'sealed') marks.push({ x: drv.fs * Math.sqrt(1 + this.r.vasEq / fin.vb), color: '#4ade80', label: 'Fc' });
-    else marks.push({ x: fin.fb, color: '#4ade80', label: 'Fb' });
-    if (type !== 'sealed') marks.push({ x: an.fSub, color: '#f87171', label: 'subso' });
-    const gold = '#FFD700';
+    if (type === 'sealed') marks.push({ x: drv.fs * Math.sqrt(1 + this.r.vasEq / fin.vb), color: '#3ddc97', label: 'Fc' });
+    else marks.push({ x: fin.fb, color: '#3ddc97', label: 'Fb' });
+    if (type !== 'sealed') marks.push({ x: an.fSub, color: '#ff5c62', label: 'subso' });
+    const gold = '#ffa53d';
     let note = '';
 
     if (this.chartMode === 'resp') {
-      const series = [{ x: sim.f, y: sim.rel, color: gold, width: 2.5, fill: 'rgba(255,215,0,0.07)' }];
+      const series = [{ x: sim.f, y: sim.rel, color: gold, width: 2.5, fill: 'rgba(255,165,61,0.09)' }];
       if ($('chk-cabin').checked) {
-        series.push({ x: sim.f, y: sim.f.map((f, i) => sim.rel[i] + A.cabinGain(f)), color: '#7dd3fc', width: 2, dash: [6, 4] });
+        series.push({ x: sim.f, y: sim.f.map((f, i) => sim.rel[i] + A.cabinGain(f)), color: '#5ec8ff', width: 2, dash: [6, 4] });
         note = 'Pointillés : réponse estimée dans une voiture (gain habitacle moyen, +12 dB/oct sous ~55 Hz).';
       } else {
         note = `0 dB = niveau du HP au-dessus du grave. SPL absolu : 0 dB ≈ ${fmt(sim.splRef, 0)} dB à ${fmt(d.power, 0)} W (1 m, demi-espace).`;
       }
-      marks.push({ x: an.f3, color: '#fb923c', label: 'f3' });
+      marks.push({ x: an.f3, color: '#ffcf8a', label: 'f3' });
       this.chart.draw({ series, yMin: -30, yMax: 15, yStep: 5, unit: 'dB',
                         hLines: [{ y: -3, color: 'rgba(251,146,60,0.7)', label: '−3 dB' }], vLines: marks });
     } else if (this.chartMode === 'exc') {
       const yMax = Math.ceil(Math.max(drv.xmax * 1.5, Math.min(Math.max(...sim.xmm), drv.xmax * 4)) / 5) * 5;
       this.chart.draw({ series: [{ x: sim.f, y: sim.xmm, color: gold, width: 2.5 }],
                         yMin: 0, yMax, yStep: yMax / 5, unit: 'mm',
-                        hLines: [{ y: drv.xmax, color: '#f87171', label: `Xmax ${fmt(drv.xmax)} mm` }], vLines: marks });
+                        hLines: [{ y: drv.xmax, color: '#ff5c62', label: `Xmax ${fmt(drv.xmax)} mm` }], vLines: marks });
       note = `Excursion de chaque HP à ${fmt(d.power, 0)} W. Sous l'accord d'un évent elle s'envole : d'où le filtre subsonique.`;
     } else {
       const yMax = Math.max(35, Math.ceil(Math.max(...sim.vport.filter((v, i) => sim.f[i] >= an.fSub)) / 5) * 5);
       this.chart.draw({ series: [{ x: sim.f, y: sim.vport, color: gold, width: 2.5 }],
                         yMin: 0, yMax, yStep: yMax / 7, unit: 'm/s',
-                        hLines: [{ y: 17, color: '#fbbf24', label: '17 m/s' }, { y: 26, color: '#f87171', label: '26 m/s : souffle' }],
+                        hLines: [{ y: 17, color: '#ffcf8a', label: '17 m/s' }, { y: 26, color: '#ff5c62', label: '26 m/s : souffle' }],
                         vLines: marks });
       note = `Vitesse de l'air dans l'évent à ${fmt(d.power, 0)} W.`;
     }

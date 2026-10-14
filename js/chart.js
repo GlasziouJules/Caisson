@@ -5,7 +5,7 @@
 const CHART = (() => {
   const F_MIN = 10, F_MAX = 300;
   const F_TICKS = [10, 20, 30, 40, 50, 60, 80, 100, 150, 200, 300];
-  const BG = '#061a0a', GRID = 'rgba(154,204,165,0.12)', TXT = 'rgba(200,230,205,0.7)';
+  const BG = '#0b0c0f', GRID = 'rgba(255,255,255,0.06)', TXT = 'rgba(160,165,175,0.85)';
 
   class Chart {
     constructor(canvas) {
@@ -38,7 +38,7 @@ const CHART = (() => {
 
       ctx.fillStyle = BG;
       ctx.fillRect(0, 0, cssW, cssH);
-      ctx.font = '10px ui-monospace, monospace';
+      ctx.font = "10px 'JetBrains Mono', ui-monospace, monospace";
       ctx.lineWidth = 1;
 
       // Grille
