@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@500;600;700&display=swap">
-  <link rel="stylesheet" href="style.css?v=20261014f">
+  <link rel="stylesheet" href="style.css?v=20261014g">
 </head>
 <body>
 
@@ -275,6 +275,13 @@
             <label for="Fb">Accord Fb <span class="unit">Hz</span></label>
             <input type="number" id="Fb" step="0.5" placeholder="auto">
           </div>
+          <div class="param-group">
+            <label for="drv-pos">Position du HP</label>
+            <select id="drv-pos">
+              <option value="far">Le plus loin possible de l'évent</option>
+              <option value="center">Centré sur la façade</option>
+            </select>
+          </div>
         </div>
         <div class="port-type-row">
           <label class="radio-label"><input type="radio" name="port-type" value="round">
@@ -428,11 +435,11 @@
     window.OrbitControls = OrbitControls;
     window.dispatchEvent(new Event('three-ready'));
   </script>
-  <script src="js/data.js?v=20261014f"></script>
-  <script src="js/acoustics.js?v=20261014f"></script>
-  <script src="js/geometry.js?v=20261014f"></script>
-  <script src="js/chart.js?v=20261014f"></script>
-  <script src="js/viewer.js?v=20261014f"></script>
-  <script src="js/app.js?v=20261014f"></script>
+  <script src="js/data.js?v=20261014g"></script>
+  <script src="js/acoustics.js?v=20261014g"></script>
+  <script src="js/geometry.js?v=20261014g"></script>
+  <script src="js/chart.js?v=20261014g"></script>
+  <script src="js/viewer.js?v=20261014g"></script>
+  <script src="js/app.js?v=20261014g"></script>
 </body>
 </html>

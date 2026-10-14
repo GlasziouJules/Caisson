@@ -380,7 +380,8 @@ class App {
       goalTxt = `Qtc arrière ${fmt(qtcR, 2)}`;
     }
 
-    let geo = designBox({ type, t, drv: geoDrv, vnet: vb, vr, vf, fb, port, custom });
+    const drvPos = $('drv-pos').value;
+    let geo = designBox({ type, t, drv: geoDrv, vnet: vb, vr, vf, fb, port, custom, drvPos });
 
     // Dimensions imposées : le volume réel peut être bien plus grand (ou plus
     // petit) que le volume visé. L'évent est redimensionné sur le volume réel,
@@ -390,7 +391,7 @@ class App {
       for (let i = 0; i < 2 && autoSize && Math.abs(geo.net / vb - 1) > 0.05; i++) {
         vb = geo.net;
         port = sizePort({ ...base, type, vb, fb }, port.kind, vb);
-        geo = designBox({ type, t, drv: geoDrv, vnet: vb, vr, vf, fb, port, custom });
+        geo = designBox({ type, t, drv: geoDrv, vnet: vb, vr, vf, fb, port, custom, drvPos });
       }
     }
 
@@ -401,7 +402,7 @@ class App {
       const want = port.area ?? port.minArea;
       for (let n = 2; n <= 4 && (geo.overflow > 0.5 || geo.portArea < 0.9 * want); n++) {
         const p2 = sizePort({ ...base, type, vr, vf, fb }, 'round', vf, n);
-        const g2 = designBox({ type, t, drv: geoDrv, vnet: vb, vr, vf, fb, port: p2, custom });
+        const g2 = designBox({ type, t, drv: geoDrv, vnet: vb, vr, vf, fb, port: p2, custom, drvPos });
         const better = (g2.overflow <= 0.5 && geo.overflow > 0.5) ||
           ((g2.overflow <= 0.5) === (geo.overflow <= 0.5) && g2.portArea > geo.portArea * 1.05);
         if (better) { geo = g2; port = p2; }
@@ -541,6 +542,10 @@ class App {
       w.push(`Le volume visé est trop petit pour loger ${this.r.count > 1 ? 'ces HP' : 'ce HP'} : le caisson a été agrandi au minimum physique. ` +
              `Le calcul utilise le volume réel.` +
              (type === 'sealed' && drv.vas < 40 ? ' Ce HP à faible Vas est conçu pour un caisson à évent.' : ''));
+    }
+    if (geo.noFit) {
+      w.push(`Le cadre du HP (Ø ${fmt(geo.frame * 10, 0)} mm) ne tient pas sur la façade à côté de l'évent avec ces dimensions : ` +
+             `agrandissez le caisson${port?.kind === 'slot' && port.pos === 'bottom' ? ' ou placez la fente sur le côté' : ''}.`);
     }
     if (geo.overflow > 0.5) {
       let msg = `L'évent ne tient pas dans le caisson : il manque ${fmt(geo.overflow, 0)} cm de longueur. ` +

@@ -164,10 +164,24 @@ const GEO = (() => {
     }
 
     // ── Clos / évent : HP en façade ──
+    // Position : le plus loin possible de l'évent ("far", par défaut) ou
+    // centré sur la façade ("center"), toujours dans la zone libre.
     const po    = port?.kind === 'round' ? port.d + 2 * WALL : 0;
-    const portsW = port?.kind === 'round' ? req.cols * (po + GAP) : 0;
-    const startX = (x0 + x1) / 2 - (rowW + portsW) / 2;
-    const cy     = (y0 + y1) / 2;
+    const portsZ = port?.kind === 'round' ? req.cols * po + (req.cols - 1) * GAP : 0;
+    const center = spec.drvPos === 'center' || !port;
+    const hw     = rowW / 2;
+    // Zone horizontale disponible pour la rangée de HP (tubes ronds à droite)
+    const dLo = x0 + EDGE, dHi = x1 - EDGE - (portsZ ? portsZ + GAP : 0);
+    const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), Math.max(lo, hi));
+    let rowCx = center ? clamp(0, dLo + hw, dHi - hw) : dLo + hw;
+    let cy    = 0;
+    if (port?.kind === 'slot' && port.pos === 'bottom') {
+      rowCx = clamp(0, dLo + hw, dHi - hw);
+      cy    = center ? clamp(0, y0 + EDGE + frame / 2, y1 - EDGE - frame / 2) : y1 - EDGE - frame / 2;
+    }
+    const startX = rowCx - hw;
+    // Cotes imposées trop justes : le cadre du HP déborde de la zone libre
+    const noFit = dHi - dLo < rowW - 0.5 || (y1 - y0) < frame - 0.5;
     for (let i = 0; i < nRow; i++) {
       const x = startX + frame / 2 + i * (frame + GAP);
       frontHoles.push({ x, y: cy, r: drv.cutout / 2 });
@@ -179,7 +193,7 @@ const GEO = (() => {
       let k = 0;
       for (let c = 0; c < req.cols; c++) {
         const inCol = Math.min(req.perCol, port.count - k);
-        const px    = startX + rowW + GAP + po / 2 + c * (po + GAP);
+        const px    = x1 - EDGE - po / 2 - c * (po + GAP);   // contre le bord opposé au HP
         for (let j = 0; j < inCol; j++, k++) {
           const py = y0 + EDGE + po / 2 + j * (po + GAP);   // empilés depuis le bas
           frontHoles.push({ x: px, y: py, r: po / 2 });
@@ -240,6 +254,10 @@ const GEO = (() => {
     parts.push({ kind: 'holed', w: fw, h: fh, thick: t, pos: [fcx, fcy, zF - t / 2],
                  holes: frontHoles.map(h => ({ ...h, x: h.x - fcx, y: h.y - fcy })) });
     const notes = [`${nRow} découpe(s) HP Ø ${r1(drv.cutout * 10)} mm`];
+    const fl = fcx - fw / 2, fb = fcy - fh / 2;   // coin bas-gauche de la façade (vue de face)
+    const at = drivers.filter(d => !d.inner)
+      .map(d => `${Math.round((d.x - fl) * 10)} / ${Math.round((d.y - fb) * 10)}`);
+    notes.push(`centre HP à ${at.join(', ')} mm (depuis le bord gauche / le bas)`);
     if (port?.kind === 'round') notes.push(`${port.count} trou(s) Ø ${r1(po * 10)} mm`);
     cuts.splice(3, 0, { name: 'Façade', qty: 1, a: fw, b: fh, note: notes.join(' · ') });
 
@@ -248,7 +266,7 @@ const GEO = (() => {
     return { W, H, D, Wi, Hi, Di, parts, drivers, tubes, air, cuts, frontHoles,
              disp: { drivers: dispD, port: portDisp, boards: boardDisp },
              gross, net: gross - dispD - portDisp - boardDisp,
-             achieved, overflow, folded, extra };
+             achieved, overflow, folded, extra, noFit, frame };
   }
 
   /**
