@@ -382,6 +382,18 @@ class App {
 
     let geo = designBox({ type, t, drv: geoDrv, vnet: vb, vr, vf, fb, port, custom });
 
+    // Dimensions imposées : le volume réel peut être bien plus grand (ou plus
+    // petit) que le volume visé. L'évent est redimensionné sur le volume réel,
+    // sinon un grand caisson garde un évent minuscule (court, bruyant).
+    if (custom && type === 'ported' && port && geo.net > 1) {
+      const autoSize = port.kind === 'slot' ? !num('slot-h') : !num('port-diam');
+      for (let i = 0; i < 2 && autoSize && Math.abs(geo.net / vb - 1) > 0.05; i++) {
+        vb = geo.net;
+        port = sizePort({ ...base, type, vb, fb }, port.kind, vb);
+        geo = designBox({ type, t, drv: geoDrv, vnet: vb, vr, vf, fb, port, custom });
+      }
+    }
+
     // Bandpass, nombre de tubes "auto" : la chambre avant est peu profonde,
     // un seul gros tube n'y tient souvent pas. On ajoute des tubes (jusqu'à 4)
     // tant que la section logeable augmente.
@@ -523,7 +535,7 @@ class App {
 
   _renderWarnings() {
     const { geo, an, drv, type, port, target, fin, d, notes, custom } = this.r;
-    const w = [...notes];
+    const w = [...new Set(notes)];
 
     if (geo.oversized) {
       w.push(`Le volume visé est trop petit pour loger ${this.r.count > 1 ? 'ces HP' : 'ce HP'} : le caisson a été agrandi au minimum physique. ` +
