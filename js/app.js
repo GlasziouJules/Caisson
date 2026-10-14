@@ -316,7 +316,8 @@ class App {
     const drv = A.driverModel({ fs: d.fs, qes: d.qes, qms: d.qms, vas: d.vas, re: d.re, sd: d.sd, xmax: d.xmax });
     const cfgSel = $('config').value;
     const iso    = cfgSel === 'iso';
-    const count  = iso ? 2 : +cfgSel;
+    const count  = iso ? 2 : parseInt(cfgSel, 10);
+    const rows   = cfgSel === '4' ? 2 : 1;        // 4 HP : carré 2 × 2 ; "4l" : en ligne
     const mult   = iso ? 0.5 : count;           // facteur de volume
     const vasEq  = d.vas * mult;
     const base   = { drv, count, iso, power: d.power };
@@ -357,7 +358,7 @@ class App {
 
     // Encombrement physique du HP
     const geoDrv = {
-      count, iso,
+      count, iso, rows,
       nominal: d.nominal / 10,
       cutout:  (d.cutout ?? A.estimate.cutout(d.nominal)) / 10,
       depth:   (d.depth  ?? A.estimate.depth(d.nominal)) / 10,

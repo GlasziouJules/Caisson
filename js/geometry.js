@@ -22,10 +22,14 @@ const GEO = (() => {
   // ── Contraintes minimales imposées par les HP et l'évent ────────
   function requirements(spec, hs) {
     const { drv, t, port, type } = spec;
-    const nRow  = drv.iso ? 1 : drv.count;
-    const frame = drv.nominal * 1.03;
-    const rowW  = nRow * frame + (nRow - 1) * GAP;
-    const req   = { nRow, frame, minW: rowW + 2 * EDGE, minH: frame + 2 * EDGE };
+    // HP en façade : une rangée, ou deux rangées (4 HP en carré 2 × 2)
+    const nDrv   = drv.iso ? 1 : drv.count;
+    const rows   = drv.rows === 2 && nDrv >= 4 ? 2 : 1;
+    const nRow   = Math.ceil(nDrv / rows);          // HP par rangée
+    const frame  = drv.nominal * 1.03;
+    const rowW   = nRow * frame + (nRow - 1) * GAP;
+    const blockH = rows * frame + (rows - 1) * GAP;
+    const req    = { nDrv, rows, nRow, frame, blockH, minW: rowW + 2 * EDGE, minH: blockH + 2 * EDGE };
     const motor = drv.depth * (drv.iso ? 2 : 1) + 2;
 
     if (type === 'bandpass') {
@@ -40,7 +44,7 @@ const GEO = (() => {
     req.minD = motor + 1;
     if (port?.kind === 'round') {
       const po     = port.d + 2 * WALL;
-      const perCol = Math.max(1, Math.floor((frame + GAP) / (po + GAP)));
+      const perCol = Math.max(1, Math.floor((blockH + GAP) / (po + GAP)));
       req.cols   = Math.ceil(port.count / perCol);
       req.perCol = perCol;
       req.minW  += req.cols * (po + GAP);
@@ -118,8 +122,11 @@ const GEO = (() => {
       if (port.pos === 'bottom') y0 += hs + t; else x1 -= hs + t;
     }
 
-    const nRow = req.nRow;
+    const { nDrv, nRow, rows, blockH } = req;
     const rowW = nRow * frame + (nRow - 1) * GAP;
+    // HP n° i : colonne et décalage vertical (2 rangées → une en haut, une en bas)
+    const rowDy = (frame + GAP) / 2;
+    const cell  = i => ({ col: i % nRow, dy: rows === 2 ? (i < nRow ? rowDy : -rowDy) : 0 });
     const bounds = { xMin: -Wi / 2, xMax: Wi / 2, yMin: -Hi / 2, yMax: Hi / 2 };
     // Place libre derrière le(s) moteur(s) pour un coude latéral
     const behindMotor = po => Di - drv.depth * (drv.iso ? 2 : 1) - 1 >= po + 1;
@@ -132,14 +139,15 @@ const GEO = (() => {
       const zD  = zB + Dr;                           // face arrière de la cloison
       const sx  = -rowW / 2 + frame / 2;
       const divHoles = [];
-      for (let i = 0; i < nRow; i++) {
-        const x = sx + i * (frame + GAP);
-        divHoles.push({ x, y: 0, r: drv.cutout / 2 });
-        drivers.push({ x, y: 0, z: zD + t, rFrame: frame / 2, rCut: drv.cutout / 2, depth: drv.depth });
-        if (drv.iso) drivers.push({ x, y: 0, z: zD + t - drv.depth - 1, rFrame: frame / 2, rCut: drv.cutout / 2, depth: drv.depth, inner: true });
+      for (let i = 0; i < nDrv; i++) {
+        const { col, dy } = cell(i);
+        const x = sx + col * (frame + GAP);
+        divHoles.push({ x, y: dy, r: drv.cutout / 2 });
+        drivers.push({ x, y: dy, z: zD + t, rFrame: frame / 2, rCut: drv.cutout / 2, depth: drv.depth });
+        if (drv.iso) drivers.push({ x, y: dy, z: zD + t - drv.depth - 1, rFrame: frame / 2, rCut: drv.cutout / 2, depth: drv.depth, inner: true });
       }
       parts.push({ kind: 'holed', w: Wi, h: Hi, thick: t, pos: [0, 0, zD + t / 2], holes: divHoles });
-      cuts.push({ name: 'Cloison porte-HP', qty: 1, a: Wi, b: Hi, note: `${nRow} découpe(s) Ø ${r1(drv.cutout * 10)} mm` });
+      cuts.push({ name: 'Cloison porte-HP', qty: 1, a: Wi, b: Hi, note: `${nDrv} découpe(s) Ø ${r1(drv.cutout * 10)} mm` });
 
       const po = port.d + 2 * WALL;
       const totalW = port.count * po + (port.count - 1) * GAP;
@@ -177,16 +185,18 @@ const GEO = (() => {
     let cy    = 0;
     if (port?.kind === 'slot' && port.pos === 'bottom') {
       rowCx = clamp(0, dLo + hw, dHi - hw);
-      cy    = center ? clamp(0, y0 + EDGE + frame / 2, y1 - EDGE - frame / 2) : y1 - EDGE - frame / 2;
+      cy    = center ? clamp(0, y0 + EDGE + blockH / 2, y1 - EDGE - blockH / 2) : y1 - EDGE - blockH / 2;
     }
     const startX = rowCx - hw;
     // Cotes imposées trop justes : le cadre du HP déborde de la zone libre
-    const noFit = dHi - dLo < rowW - 0.5 || (y1 - y0) < frame - 0.5;
-    for (let i = 0; i < nRow; i++) {
-      const x = startX + frame / 2 + i * (frame + GAP);
-      frontHoles.push({ x, y: cy, r: drv.cutout / 2 });
-      drivers.push({ x, y: cy, z: zF, rFrame: frame / 2, rCut: drv.cutout / 2, depth: drv.depth });
-      if (drv.iso) drivers.push({ x, y: cy, z: zF - t - drv.depth - 1, rFrame: frame / 2, rCut: drv.cutout / 2, depth: drv.depth, inner: true });
+    const noFit = dHi - dLo < rowW - 0.5 || (y1 - y0) < blockH - 0.5;
+    for (let i = 0; i < nDrv; i++) {
+      const { col, dy } = cell(i);
+      const x = startX + frame / 2 + col * (frame + GAP);
+      const y = cy + dy;
+      frontHoles.push({ x, y, r: drv.cutout / 2 });
+      drivers.push({ x, y, z: zF, rFrame: frame / 2, rCut: drv.cutout / 2, depth: drv.depth });
+      if (drv.iso) drivers.push({ x, y, z: zF - t - drv.depth - 1, rFrame: frame / 2, rCut: drv.cutout / 2, depth: drv.depth, inner: true });
     }
 
     if (port?.kind === 'round') {
@@ -253,7 +263,7 @@ const GEO = (() => {
     const fw = x1 - x0, fh = y1 - y0, fcx = (x0 + x1) / 2, fcy = (y0 + y1) / 2;
     parts.push({ kind: 'holed', w: fw, h: fh, thick: t, pos: [fcx, fcy, zF - t / 2],
                  holes: frontHoles.map(h => ({ ...h, x: h.x - fcx, y: h.y - fcy })) });
-    const notes = [`${nRow} découpe(s) HP Ø ${r1(drv.cutout * 10)} mm`];
+    const notes = [`${nDrv} découpe(s) HP Ø ${r1(drv.cutout * 10)} mm`];
     const fl = fcx - fw / 2, fb = fcy - fh / 2;   // coin bas-gauche de la façade (vue de face)
     const at = drivers.filter(d => !d.inner)
       .map(d => `${Math.round((d.x - fl) * 10)} / ${Math.round((d.y - fb) * 10)}`);
@@ -312,7 +322,9 @@ const GEO = (() => {
 
   function designOnce(spec) {
     const { t, port, type } = spec;
-    const n = spec.drv.iso ? 1 : spec.drv.count;
+    // Proportions visées : selon le nombre de HP par rangée (2 × 2 → comme 2 HP)
+    const nAll = spec.drv.iso ? 1 : spec.drv.count;
+    const n = Math.ceil(nAll / (spec.drv.rows === 2 && nAll >= 4 ? 2 : 1));
     const slot = port?.kind === 'slot';
 
     // Largeur de la fente = toute la largeur (bas) ou hauteur (côté) intérieure
